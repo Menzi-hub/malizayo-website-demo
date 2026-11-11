@@ -1,0 +1,550 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Administrator Dashboard | Malizayo Primary School</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body class="admin-page">
+
+    <div class="admin-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="admin-sidebar">
+
+            <div class="admin-brand">
+
+                <img src="images/school-badge.png"
+                     alt="School Badge">
+
+                <h2>MALIZAYO</h2>
+
+                <p>PRIMARY SCHOOL</p>
+
+                <small>Learn • Grow • Achieve</small>
+
+            </div>
+
+            <nav class="admin-navigation">
+
+                <a href="#dashboard" class="active">
+                    Dashboard
+                </a>
+
+                <a href="#admissions">
+                    Admissions
+                </a>
+
+                <a href="#learners">
+                    Learner Records
+                </a>
+
+                <a href="#reports">
+                    Report Uploads
+                </a>
+
+                <a href="index.html">
+                    Public Website
+                </a>
+
+            </nav>
+
+            <div class="admin-sidebar-footer">
+                Demonstration Version
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+
+        <main class="admin-main">
+
+
+            <!-- TOP HEADER -->
+
+            <header class="admin-header">
+
+                <div>
+                    <p class="admin-small-heading">
+                        MALIZAYO PRIMARY SCHOOL
+                    </p>
+
+                    <h1>Administrator Dashboard</h1>
+
+                    <p>School Management Demonstration</p>
+                </div>
+
+                <div class="admin-user">
+                    <span class="admin-user-icon">A</span>
+
+                    <div>
+                        <strong>School Administrator</strong>
+                        <p>Demo Account</p>
+                    </div>
+                </div>
+
+            </header>
+
+
+            <!-- DEMONSTRATION WARNING -->
+
+            <div class="admin-demo-notice">
+
+                DEMONSTRATION ONLY:
+                All applications and learner records below are fictional.
+                No real school information is stored.
+
+            </div>
+
+
+            <!-- DASHBOARD SUMMARY -->
+
+            <section class="admin-stats" id="dashboard">
+
+                <div class="stat-card">
+
+                    <span>Applications Received</span>
+
+                    <h2 id="applicationsCount">4</h2>
+
+                    <p>Sample applications</p>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>Pending Document Checks</span>
+
+                    <h2 id="documentsCount">2</h2>
+
+                    <p>Require review</p>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>Reviewed Applications</span>
+
+                    <h2 id="reviewedCount">1</h2>
+
+                    <p>Sample approved applications</p>
+
+                </div>
+
+            </section>
+
+
+            <!-- ADMISSIONS TABLE -->
+
+            <section class="admin-panel" id="admissions">
+
+                <div class="panel-heading">
+
+                    <h2>Admission Applications</h2>
+
+                    <span>Fictional Records</span>
+
+                </div>
+
+                <div class="admin-table-container">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Reference</th>
+                                <th>Learner</th>
+                                <th>Grade</th>
+                                <th>Documents</th>
+                                <th>Application Status</th>
+                                <th>Actions</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <tr data-application="MPS-DEMO-001">
+
+                                <td>MPS-DEMO-001</td>
+
+                                <td>Sample Learner A</td>
+
+                                <td>Grade 5</td>
+
+                                <td>Complete</td>
+
+                                <td>
+                                    <span class="status-pill status-pending"
+                                          data-application-status>
+                                        Pending Review
+                                    </span>
+                                </td>
+
+                                <td class="admin-actions">
+
+                                    <button
+                                        type="button"
+                                        class="view-application-btn">
+                                        View
+                                    </button>
+
+                                    <select class="status-choice"
+                                            aria-label="Status for application 001">
+
+                                        <option>Pending Review</option>
+                                        <option>Under Review</option>
+                                        <option>Approved</option>
+                                        <option>Awaiting Documents</option>
+
+                                    </select>
+
+                                    <button
+                                        type="button"
+                                        class="update-status-btn">
+                                        Update
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr data-application="MPS-DEMO-002">
+
+                                <td>MPS-DEMO-002</td>
+
+                                <td>Sample Learner B</td>
+
+                                <td>Grade 4</td>
+
+                                <td>Documents Needed</td>
+
+                                <td>
+                                    <span class="status-pill status-review"
+                                          data-application-status>
+                                        Under Review
+                                    </span>
+                                </td>
+
+                                <td class="admin-actions">
+
+                                    <button
+                                        type="button"
+                                        class="view-application-btn">
+                                        View
+                                    </button>
+
+                                    <select class="status-choice"
+                                            aria-label="Status for application 002">
+
+                                        <option>Pending Review</option>
+                                        <option selected>Under Review</option>
+                                        <option>Approved</option>
+                                        <option>Awaiting Documents</option>
+
+                                    </select>
+
+                                    <button
+                                        type="button"
+                                        class="update-status-btn">
+                                        Update
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr data-application="MPS-DEMO-003">
+
+                                <td>MPS-DEMO-003</td>
+
+                                <td>Sample Learner C</td>
+
+                                <td>Grade 2</td>
+
+                                <td>Complete</td>
+
+                                <td>
+                                    <span class="status-pill status-approved"
+                                          data-application-status>
+                                        Approved
+                                    </span>
+                                </td>
+
+                                <td class="admin-actions">
+
+                                    <button
+                                        type="button"
+                                        class="view-application-btn">
+                                        View
+                                    </button>
+
+                                    <select class="status-choice"
+                                            aria-label="Status for application 003">
+
+                                        <option>Pending Review</option>
+                                        <option>Under Review</option>
+                                        <option selected>Approved</option>
+                                        <option>Awaiting Documents</option>
+
+                                    </select>
+
+                                    <button
+                                        type="button"
+                                        class="update-status-btn">
+                                        Update
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr data-application="MPS-DEMO-004">
+
+                                <td>MPS-DEMO-004</td>
+
+                                <td>Sample Learner D</td>
+
+                                <td>Grade 7</td>
+
+                                <td>Documents Needed</td>
+
+                                <td>
+                                    <span class="status-pill status-documents"
+                                          data-application-status>
+                                        Awaiting Documents
+                                    </span>
+                                </td>
+
+                                <td class="admin-actions">
+
+                                    <button
+                                        type="button"
+                                        class="view-application-btn">
+                                        View
+                                    </button>
+
+                                    <select class="status-choice"
+                                            aria-label="Status for application 004">
+
+                                        <option>Pending Review</option>
+                                        <option>Under Review</option>
+                                        <option>Approved</option>
+                                        <option selected>Awaiting Documents</option>
+
+                                    </select>
+
+                                    <button
+                                        type="button"
+                                        class="update-status-btn">
+                                        Update
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <p id="adminNotice"
+                   class="admin-notice"
+                   role="status"
+                   aria-live="polite"></p>
+
+            </section>
+
+
+            <!-- LEARNER RECORDS -->
+
+            <section class="admin-panel" id="learners">
+
+                <div class="panel-heading">
+
+                    <h2>Learner Records</h2>
+
+                    <span>Sample Learners</span>
+
+                </div>
+
+                <div class="learner-list">
+
+                    <div class="learner-item">
+                        <strong>Sample Learner A</strong>
+                        <span>Grade 5</span>
+                        <span class="learner-active">Active</span>
+                    </div>
+
+                    <div class="learner-item">
+                        <strong>Sample Learner B</strong>
+                        <span>Grade 4</span>
+                        <span class="learner-active">Active</span>
+                    </div>
+
+                    <div class="learner-item">
+                        <strong>Sample Learner C</strong>
+                        <span>Grade 2</span>
+                        <span class="learner-active">Active</span>
+                    </div>
+
+                </div>
+
+                <p class="document-note">
+                    These are fictional records for demonstration.
+                </p>
+
+            </section>
+
+<!-- PUBLISH LEARNER RESULTS -->
+
+<section class="admin-panel" id="publish-results">
+
+    <div class="panel-heading">
+        <h2>Publish Learner Results</h2>
+        <span>Demonstration Only</span>
+    </div>
+
+    <p class="document-note">
+        Select a fictional learner, subject and mark.
+    </p>
+
+    <form id="resultForm" class="result-publish-form">
+
+        <label for="resultLearner">Select Learner</label>
+
+        <select id="resultLearner" required>
+            <option value="">Choose learner</option>
+            <option value="Sample Learner A">
+                Sample Learner A
+            </option>
+        </select>
+
+        <label for="resultSubject">Select Subject</label>
+
+        <select id="resultSubject" required>
+            <option value="">Choose subject</option>
+            <option>Mathematics</option>
+            <option>English</option>
+            <option>isiZulu</option>
+            <option>Natural Sciences</option>
+        </select>
+
+        <label for="resultMark">Enter Mark (%)</label>
+
+        <input type="number"
+               id="resultMark"
+               min="0"
+               max="100"
+               required>
+
+        <button type="submit">
+            Publish Sample Result
+        </button>
+
+    </form>
+
+    <p id="resultMessage" role="status"></p>
+
+</section>
+
+
+
+            <!-- REPORT UPLOADS -->
+
+            <section class="admin-panel" id="reports">
+
+                <div class="panel-heading">
+
+                    <h2>Report Uploads</h2>
+
+                    <span>Demonstration</span>
+
+                </div>
+
+                <div class="report-upload-area">
+
+                    <h3>Upload School Reports</h3>
+
+                    <p>
+                        Select a sample report to test the file checks.
+                    </p>
+
+                    <label for="reportFile">
+                        Choose Report File
+                    </label>
+
+                    <input
+                        type="file"
+                        id="reportFile"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                    >
+
+                    <button
+                        type="button"
+                        id="checkReportButton">
+                        Check Selected File
+                    </button>
+
+                    <p id="reportMessage"
+                       role="status"
+                       aria-live="polite"></p>
+
+                    <p class="document-note">
+                        Accepted formats: PDF, JPG and PNG.
+                        Maximum size: 5 MB.
+                        Files are not saved or uploaded.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- FOOTER -->
+
+            <footer class="admin-footer">
+
+                Malizayo Primary School |
+                Mid Illovo, KwaZulu-Natal
+
+                <p>
+                    Demonstration Dashboard.
+                    No real applications or documents are stored.
+                </p>
+
+            </footer>
+
+        </main>
+
+    </div>
+
+
+    <script src="js/admin.js"></script>
+    <script src="js/results-demo.js"></script>
+
+
+</body>
+
+</html>
