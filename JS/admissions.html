@@ -1,0 +1,377 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Admissions | Malizayo Primary School</title>
+
+    <link rel="stylesheet" href="CSS/style.css">
+
+</head>
+
+<body>
+
+    <!-- WEBSITE HEADER -->
+
+    <header class="header">
+
+        <div class="logo">
+
+            <img src="IMAGES/school-badge.png"
+                 alt="Malizayo School Badge">
+
+            <div class="logo-text">
+                <h2>MALIZAYO</h2>
+                <p>PRIMARY SCHOOL</p>
+            </div>
+
+        </div>
+
+        <nav id="navigation">
+
+            <a href="index.html">Home</a>
+            <a href="index.html#about">About Us</a>
+            <a href="academics.html">Academics</a>
+            <a href="news.html">School News</a>
+            <a href="admissions.html">Admissions</a>
+            <a href="contact.html">Contact</a>
+
+        </nav>
+
+        <button class="menu-button"
+                id="menuButton"
+                aria-expanded="false"
+                aria-controls="navigation">
+
+            ☰ Menu
+
+        </button>
+
+    </header>
+
+
+    <!-- ADMISSIONS BANNER -->
+
+    <section class="admissions-hero">
+
+        <h1>Online Admissions</h1>
+
+        <p>
+            Welcome to the Malizayo Primary School
+            online admission application.
+        </p>
+
+    </section>
+
+
+    <!-- ADMISSION FORM -->
+
+    <main class="admission-container">
+
+        <div class="admission-intro">
+
+            <h2>Apply for Admission</h2>
+
+            <p>
+                Complete the application details below.
+                Please provide accurate information.
+            </p>
+
+            <p class="demo-warning">
+                DEMONSTRATION VERSION:
+                Do not enter real learner information
+                or upload actual personal documents.
+            </p>
+
+        </div>
+
+
+        <form id="admissionForm" class="admission-form">
+
+            <!-- LEARNER DETAILS -->
+
+            <h3>1. Learner Information</h3>
+
+            <label for="learnerName">
+                Learner Full Name
+            </label>
+
+            <input type="text"
+                   id="learnerName"
+                   placeholder="Enter learner's full name"
+                   required>
+
+
+            <label for="dateOfBirth">
+                Date of Birth
+            </label>
+
+            <input type="date"
+                   id="dateOfBirth"
+                   required>
+
+
+            <label for="grade">
+                Grade Applying For
+            </label>
+
+            <select id="grade" required>
+
+                <option value="">Select Grade</option>
+                <option>Grade R</option>
+                <option>Grade 1</option>
+                <option>Grade 2</option>
+                <option>Grade 3</option>
+                <option>Grade 4</option>
+                <option>Grade 5</option>
+                <option>Grade 6</option>
+                <option>Grade 7</option>
+
+            </select>
+
+
+            <label for="previousSchool">
+                Previous School (if applicable)
+            </label>
+
+            <input type="text"
+                   id="previousSchool"
+                   placeholder="Name of previous school">
+
+
+            <!-- PARENT DETAILS -->
+
+            <h3>2. Parent / Guardian Information</h3>
+
+            <label for="parentName">
+                Parent or Guardian Full Name
+            </label>
+
+            <input type="text"
+                   id="parentName"
+                   required>
+
+
+            <label for="relationship">
+                Relationship to Learner
+            </label>
+
+            <select id="relationship" required>
+
+                <option value="">Select relationship</option>
+                <option>Mother</option>
+                <option>Father</option>
+                <option>Legal Guardian</option>
+                <option>Other</option>
+
+            </select>
+
+
+            <label for="parentPhone">
+                Contact Number
+            </label>
+
+            <input type="tel"
+                   id="parentPhone"
+                   placeholder="Enter contact number"
+                   required>
+
+
+            <label for="parentEmail">
+                Email Address
+            </label>
+
+            <input type="email"
+                   id="parentEmail"
+                   placeholder="Enter email address">
+
+
+            <label for="address">
+                Residential Address
+            </label>
+
+            <textarea id="address"
+                      rows="3"
+                      placeholder="Enter residential address"
+                      required></textarea>
+
+
+            <!-- DOCUMENT UPLOADS -->
+
+            <h3>3. Supporting Documents</h3>
+
+            <p>
+                The following are demonstration document
+                categories. The school will approve the
+                final checklist and required documents.
+            </p>
+
+            <label for="birthCertificate">
+                Birth Certificate / Alternative Proof
+            </label>
+
+            <input type="file"
+                   id="birthCertificate"
+                   accept=".pdf,.jpg,.jpeg,.png">
+
+
+            <label for="parentID">
+                Parent / Guardian Identification
+            </label>
+
+            <input type="file"
+                   id="parentID"
+                   accept=".pdf,.jpg,.jpeg,.png">
+
+
+            <label for="proofResidence">
+                Proof of Residence
+            </label>
+
+            <input type="file"
+                   id="proofResidence"
+                   accept=".pdf,.jpg,.jpeg,.png">
+
+
+            <label for="previousReport">
+                Previous School Report
+            </label>
+
+            <input type="file"
+                   id="previousReport"
+                   accept=".pdf,.jpg,.jpeg,.png">
+
+
+            <p class="document-note">
+                Accepted demonstration formats:
+                PDF, JPG and PNG. Maximum 5 MB per file.
+            </p>
+
+
+            <!-- PARENT DECLARATION -->
+
+           
+<!-- PARENT DECLARATION AND SIGNATURE -->
+
+<h3>4. Parent Declaration and Signature</h3>
+
+<label for="signatureName">
+    Parent / Guardian Full Name
+</label>
+
+<input
+    type="text"
+    id="signatureName"
+    placeholder="Type your full name"
+    required
+>
+
+
+<!-- SIGNATURE AREA -->
+
+<div class="signature-box">
+
+    <label for="signaturePad">
+        Draw Your Signature Below
+    </label>
+
+    <canvas
+        id="signaturePad"
+        width="700"
+        height="180"
+        aria-label="Area for drawing a signature"
+    ></canvas>
+
+    <div class="signature-controls">
+
+        <button
+            type="button"
+            id="clearSignature"
+            class="clear-button"
+        >
+            Clear Signature
+        </button>
+
+        <span id="signatureStatus">
+            No signature yet.
+        </span>
+
+    </div>
+
+</div>
+
+
+<p class="document-note">
+    This is a demonstration signature facility.
+    It does not save or legally verify signatures.
+</p>
+
+
+<!-- DECLARATION -->
+
+<div class="declaration">
+
+    <input
+        type="checkbox"
+        id="declaration"
+        required
+    >
+
+    <label for="declaration">
+        I confirm that the information provided
+        is accurate and that I am authorised to
+        submit this application.
+    </label>
+
+</div>
+
+
+
+            <!-- SUBMIT BUTTON -->
+
+            <button type="submit"
+                    class="button admission-button">
+
+                Submit Application
+
+            </button>
+
+            <div id="admissionMessage"
+                 class="admission-message"
+                 aria-live="polite">
+
+            </div>
+
+        </form>
+
+    </main>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <h2>Malizayo Primary School</h2>
+
+        <p>Mid Illovo, KwaZulu-Natal, South Africa</p>
+
+        <p>
+            &copy; 2026 Malizayo Primary School.
+            All rights reserved.
+        </p>
+
+    </footer>
+
+
+    <script src="JS/script.js"></script>
+
+</body>
+
+</html>
