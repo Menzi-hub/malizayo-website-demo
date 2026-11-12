@@ -2309,3 +2309,55 @@ footer {
     }
 
 }
+
+/* LATEST ANNOUNCEMENTS */
+
+.announcements {
+    background-color: #f4f7fb;
+    text-align: center;
+}
+
+.announcement-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-top: 35px;
+}
+
+.announcement-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: left;
+    border-top: 5px solid #f4c95d;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.announcement-date {
+    color: #173b5c;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.announcement-card h3 {
+    color: #173b5c;
+    margin: 15px 0;
+}
+
+.announcement-card p {
+    line-height: 1.7;
+}
+
+.announcement-disclaimer {
+    margin-top: 25px;
+    font-size: 13px;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .announcement-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
