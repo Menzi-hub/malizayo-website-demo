@@ -1614,10 +1614,23 @@ footer {
 
 @media (max-width: 600px) {
 
-    .admin-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+   
+.admin-header {
+    background-color: #173B5C;
+    color: white;
+    padding: 25px 30px;
+    border-radius: 9px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 
     .admin-header h1 {
         font-size: 23px;
@@ -2361,3 +2374,28 @@ footer {
     }
 }
 
+
+/* ADMIN HEADER RESPONSIVE ALIGNMENT */
+
+@media (max-width: 768px) {
+
+    .admin-main {
+        padding: 15px;
+    }
+
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+    .admin-user {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .admin-header h1 {
+        font-size: 23px;
+    }
+
+}

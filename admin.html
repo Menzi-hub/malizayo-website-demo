@@ -461,6 +461,86 @@
 
 </section>
 
+<!-- MANAGE SCHOOL ANNOUNCEMENTS -->
+
+<section class="admin-panel" id="manage-announcements">
+
+    <div class="panel-heading">
+        <h2>Manage School Announcements</h2>
+        <span>Demonstration Only</span>
+    </div>
+
+    <p class="document-note">
+        Create and manage sample school announcements.
+    </p>
+
+    <form id="announcementForm" class="result-publish-form">
+
+        <label for="announcementTitle">
+            Announcement Title
+        </label>
+
+        <input
+            type="text"
+            id="announcementTitle"
+            placeholder="Enter announcement title"
+            maxlength="100"
+            required
+        >
+
+        <label for="announcementCategory">
+            Announcement Category
+        </label>
+
+        <select id="announcementCategory" required>
+            <option value="">Choose category</option>
+            <option value="SCHOOL NOTICE">School Notice</option>
+            <option value="PARENT NOTICE">Parent Notice</option>
+            <option value="ACADEMIC NOTICE">Academic Notice</option>
+            <option value="SPORTS NOTICE">Sports Notice</option>
+            <option value="EVENT NOTICE">School Events</option>
+        </select>
+
+        <label for="announcementContent">
+            Announcement Message
+        </label>
+
+        <textarea
+            id="announcementContent"
+            rows="5"
+            maxlength="1000"
+            placeholder="Write your announcement here..."
+            required
+        ></textarea>
+
+        <button type="submit">
+            Publish Announcement
+        </button>
+
+    </form>
+
+    <p id="announcementMessage"
+       role="status"
+       aria-live="polite"></p>
+
+    <div class="announcement-management-list">
+
+        <h3>Published Demonstration Announcements</h3>
+
+        <div id="adminAnnouncementList">
+            <p>No announcements published yet.</p>
+        </div>
+
+    </div>
+
+    <p class="document-note">
+        Demonstration only. Notices are stored locally
+        in this browser and are not shared with other devices.
+    </p>
+
+</section>
+
+
 
 
             <!-- REPORT UPLOADS -->
@@ -532,9 +612,10 @@
 
     </div>
 
-
-    <script src="JS/admin.js"></script>
-    <script src="JS/results-demo.js"></script>
+<!-- Connect admin JavaScript files -->
+<script src="JS/admin.js"></script>
+<script src="JS/results-demo.js"></script>
+<script src="JS/announcements-demo.js"></script>
 
 
 </body>
