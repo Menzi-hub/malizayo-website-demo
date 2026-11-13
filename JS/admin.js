@@ -292,6 +292,8 @@ const adminAnnouncementList =
 
 const announcementStorageKey =
     "malizayoDemoAnnouncements";
+   // Keep track of the announcement being edited
+let editingAnnouncementId = null;
 
 
 // Load saved demonstration announcements
