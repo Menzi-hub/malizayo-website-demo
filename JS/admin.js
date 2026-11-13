@@ -370,6 +370,8 @@ function displayAdminAnnouncements() {
 
         const removeButton =
             document.createElement("button");
+       const editButton =
+          document.createElement("button");
 
 
         heading.textContent = announcement.title;
@@ -379,8 +381,25 @@ function displayAdminAnnouncements() {
         content.textContent = announcement.content;
 
         removeButton.textContent = "Remove Announcement";
+       editButton.type = "button";
+editButton.textContent = "Edit Announcement";
 
+      editButton.addEventListener("click", function () {
 
+    editingAnnouncementId = announcement.id;
+
+    announcementTitle.value = announcement.title;
+
+    announcementCategory.value = announcement.category;
+
+    announcementContent.value = announcement.content;
+
+    announcementMessage.textContent =
+        "Announcement loaded for editing.";
+
+    announcementTitle.focus();
+
+});
         removeButton.addEventListener("click", function () {
 
             const updatedAnnouncements =
@@ -398,12 +417,14 @@ function displayAdminAnnouncements() {
 
 
         card.appendChild(heading);
-
-        card.appendChild(category);
-
-        card.appendChild(content);
-
-        card.appendChild(removeButton);
+   
+   card.appendChild(category);
+   
+   card.appendChild(content);
+   
+   card.appendChild(editButton);
+   
+   card.appendChild(removeButton);
 
         adminAnnouncementList.appendChild(card);
 
