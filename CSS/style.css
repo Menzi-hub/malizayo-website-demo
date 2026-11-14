@@ -2462,3 +2462,45 @@ footer {
     }
 
 }
+/* ADMIN ANNOUNCEMENT FORM */
+
+#manage-announcements .result-publish-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 700px;
+    margin-top: 20px;
+}
+
+#manage-announcements .result-publish-form label {
+    display: block;
+    color: #173B5C;
+    font-weight: bold;
+}
+
+#manage-announcements .result-publish-form input,
+#manage-announcements .result-publish-form select,
+#manage-announcements .result-publish-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #CBD5E1;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    background-color: white;
+}
+
+#manage-announcements .result-publish-form textarea {
+    resize: vertical;
+}
+
+#manage-announcements .result-publish-form button {
+    background-color: #173B5C;
+    color: white;
+    border: none;
+    padding: 13px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    align-self: flex-start;
+}
