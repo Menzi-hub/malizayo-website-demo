@@ -463,35 +463,66 @@ if (announcementForm) {
             }
 
 
-            const announcements = getAnnouncements();
+            
+const announcements = getAnnouncements();
 
-            const newAnnouncement = {
+try {
 
-                id: Date.now().toString(),
+    if (editingAnnouncementId) {
 
-                title: title,
+        // Update an existing announcement
 
-                category: category,
+        const updatedAnnouncements =
+            announcements.map(function (announcement) {
 
-                content: content,
+                if (announcement.id === editingAnnouncementId) {
 
-                date: new Date().toLocaleDateString("en-ZA")
+                    return {
+                        ...announcement,
+                        title: title,
+                        category: category,
+                        content: content,
+                        date: new Date().toLocaleDateString("en-ZA")
+                    };
 
-            };
+                }
 
+                return announcement;
 
-            announcements.unshift(newAnnouncement);
+            });
 
-            try {
+        saveAnnouncements(updatedAnnouncements);
 
-                saveAnnouncements(announcements);
+        announcementMessage.textContent =
+            "Announcement updated successfully in this browser.";
 
-                announcementMessage.textContent =
-                    "Announcement published successfully in this browser.";
+        editingAnnouncementId = null;
 
-                announcementForm.reset();
+    } else {
 
-                displayAdminAnnouncements();
+        // Create a new announcement
+
+        const newAnnouncement = {
+            id: Date.now().toString(),
+            title: title,
+            category: category,
+            content: content,
+            date: new Date().toLocaleDateString("en-ZA")
+        };
+
+        announcements.unshift(newAnnouncement);
+
+        saveAnnouncements(announcements);
+
+        announcementMessage.textContent =
+            "Announcement published successfully in this browser.";
+
+    }
+
+    announcementForm.reset();
+
+    displayAdminAnnouncements();
+
 
             } catch (error) {
 
