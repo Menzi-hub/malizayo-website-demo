@@ -2362,6 +2362,60 @@ footer {
     margin-bottom: 12px;
     font-style: italic;
 }
+/* ADMIN ANNOUNCEMENT MANAGEMENT */
+
+.announcement-management-list {
+    margin-top: 25px;
+}
+
+.announcement-management-list > h3 {
+    color: #173B5C;
+    margin-bottom: 15px;
+}
+
+.announcement-management-list article {
+    background-color: #F4F7FB;
+    border: 1px solid #DCE4ED;
+    border-left: 4px solid #F4C95D;
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 14px;
+}
+
+.announcement-management-list article h4 {
+    color: #173B5C;
+    margin-bottom: 8px;
+}
+
+.announcement-management-list article p {
+    color: #536477;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 6px 0;
+}
+
+.announcement-management-list article button {
+    border: none;
+    border-radius: 5px;
+    padding: 10px 14px;
+    margin: 12px 8px 0 0;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.announcement-management-list article button:first-of-type {
+    background-color: #173B5C;
+    color: white;
+}
+
+.announcement-management-list article button:last-of-type {
+    background-color: #F4C95D;
+    color: #173B5C;
+}
+
+.announcement-management-list article button:hover {
+    opacity: 0.85;
+}
 .announcement-card h3 {
     color: #173b5c;
     margin: 15px 0;
