@@ -11,6 +11,9 @@
     const loginPanel =
         document.getElementById("adminLoginPanel");
 
+    const passwordPanel =
+        document.getElementById("adminPasswordSetupPanel");
+
     const dashboard =
         document.getElementById("adminDashboard");
 
@@ -29,17 +32,59 @@
     const loginMessage =
         document.getElementById("adminLoginMessage");
 
+    const passwordSetupForm =
+        document.getElementById("adminPasswordSetupForm");
 
-    // Use the same administrator UUID
-    // that was used in the Supabase security policies.
+    const newPasswordInput =
+        document.getElementById("adminNewPassword");
+
+    const confirmPasswordInput =
+        document.getElementById("adminConfirmPassword");
+
+    const passwordSetupButton =
+        document.getElementById("adminPasswordSetupButton");
+
+    const passwordSetupMessage =
+        document.getElementById("adminPasswordSetupMessage");
+
+
+    // IMPORTANT:
+    // Keep the same administrator UUID
+    // already used in your Supabase SQL policies.
 
     const ADMIN_USER_ID =
         "a955d9d9-e91f-4fd9-b1e7-d015af08ae04";
 
 
+    // Detect invitation and password recovery links
+
+    const hashParameters = new URLSearchParams(
+        window.location.hash.replace(/^#/, "")
+    );
+
+    const queryParameters = new URLSearchParams(
+        window.location.search
+    );
+
+    const authLinkType =
+        hashParameters.get("type") ||
+        queryParameters.get("type");
+
+    const isPasswordSetupFlow =
+        authLinkType === "invite" ||
+        authLinkType === "recovery" ||
+        queryParameters.has("code");
+
+
+    // Display login screen
+
     function showLogin(message) {
 
+        loginPanel.hidden = false;
         loginPanel.style.display = "flex";
+
+        passwordPanel.hidden = true;
+        passwordPanel.style.display = "none";
 
         dashboard.hidden = true;
 
@@ -48,9 +93,33 @@
     }
 
 
+    // Display password creation screen
+
+    function showPasswordSetup(message) {
+
+        loginPanel.hidden = true;
+        loginPanel.style.display = "none";
+
+        passwordPanel.hidden = false;
+        passwordPanel.style.display = "flex";
+
+        dashboard.hidden = true;
+
+        passwordSetupMessage.textContent =
+            message || "Please create your administrator password.";
+
+    }
+
+
+    // Display administrator dashboard
+
     function showDashboard() {
 
+        loginPanel.hidden = true;
         loginPanel.style.display = "none";
+
+        passwordPanel.hidden = true;
+        passwordPanel.style.display = "none";
 
         dashboard.hidden = false;
 
@@ -62,16 +131,22 @@
     if (
         !supabase ||
         !loginPanel ||
+        !passwordPanel ||
         !dashboard ||
         !loginForm ||
         !emailInput ||
         !passwordInput ||
         !loginButton ||
-        !loginMessage
+        !loginMessage ||
+        !passwordSetupForm ||
+        !newPasswordInput ||
+        !confirmPasswordInput ||
+        !passwordSetupButton ||
+        !passwordSetupMessage
     ) {
 
         console.error(
-            "Admin authentication could not initialise."
+            "Administrator authentication could not initialise."
         );
 
         return;
@@ -79,12 +154,12 @@
     }
 
 
-    // Keep dashboard hidden initially
+    // Keep dashboard hidden until authentication
 
     showLogin("Please sign in to continue.");
 
 
-    // Authenticate administrator
+    // NORMAL ADMINISTRATOR LOGIN
 
     loginForm.addEventListener(
         "submit",
@@ -109,7 +184,6 @@
                     await supabase.auth.signInWithPassword({
 
                         email: email,
-
                         password: password
 
                     });
@@ -120,8 +194,6 @@
                 }
 
 
-                // Check the actual authenticated account
-
                 if (
                     !data.user ||
                     data.user.id !== ADMIN_USER_ID
@@ -130,7 +202,7 @@
                     await supabase.auth.signOut();
 
                     showLogin(
-                        "This account is not authorised to access the administrator dashboard."
+                        "This account is not authorised."
                     );
 
                     return;
@@ -141,10 +213,6 @@
                 loginForm.reset();
 
                 showDashboard();
-
-                console.log(
-                    "Malizayo administrator signed in successfully."
-                );
 
 
             } catch (error) {
@@ -170,7 +238,125 @@
     );
 
 
-    // Verify an existing session when the page opens
+    // FIRST-TIME PASSWORD CREATION
+
+    passwordSetupForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+            const newPassword =
+                newPasswordInput.value;
+
+            const confirmPassword =
+                confirmPasswordInput.value;
+
+
+            passwordSetupMessage.textContent = "";
+
+
+            if (newPassword.length < 12) {
+
+                passwordSetupMessage.textContent =
+                    "Your password must contain at least 12 characters.";
+
+                return;
+
+            }
+
+
+            if (newPassword !== confirmPassword) {
+
+                passwordSetupMessage.textContent =
+                    "The passwords do not match.";
+
+                return;
+
+            }
+
+
+            passwordSetupButton.disabled = true;
+
+            passwordSetupButton.textContent =
+                "Saving password...";
+
+
+            try {
+
+                const { data: userData, error: userError } =
+                    await supabase.auth.getUser();
+
+
+                if (
+                    userError ||
+                    !userData.user ||
+                    userData.user.id !== ADMIN_USER_ID
+                ) {
+
+                    throw new Error(
+                        "Your invitation session is invalid or unauthorised. Please request a new invitation."
+                    );
+
+                }
+
+
+                const { error } =
+                    await supabase.auth.updateUser({
+
+                        password: newPassword
+
+                    });
+
+
+                if (error) {
+                    throw error;
+                }
+
+
+                passwordSetupForm.reset();
+
+                // Remove authentication tokens from the URL
+
+                window.history.replaceState(
+                    {},
+                    document.title,
+                    window.location.pathname
+                );
+
+
+                showDashboard();
+
+                console.log(
+                    "Malizayo administrator password created successfully."
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Password setup failed:",
+                    error
+                );
+
+                passwordSetupMessage.textContent =
+                    error.message ||
+                    "Unable to save your password. Please try again.";
+
+            } finally {
+
+                passwordSetupButton.disabled = false;
+
+                passwordSetupButton.textContent =
+                    "Save Password";
+
+            }
+
+        }
+    );
+
+
+    // CHECK EXISTING ADMINISTRATOR SESSION
 
     async function checkExistingSession() {
 
@@ -178,6 +364,7 @@
 
             const { data, error } =
                 await supabase.auth.getUser();
+
 
             if (error || !data.user) {
 
@@ -203,11 +390,28 @@
             }
 
 
+            // Invitation or recovery session:
+            // require password creation first.
+
+            if (isPasswordSetupFlow) {
+
+                showPasswordSetup(
+                    "Welcome. Please create your administrator password."
+                );
+
+                return;
+
+            }
+
+
+            // Existing administrator session
+
             showDashboard();
 
             console.log(
                 "Existing administrator session verified."
             );
+
 
         } catch (error) {
 
@@ -225,18 +429,32 @@
     }
 
 
-    // Display login screen after sign-out
+    // Handle authentication changes
 
-    supabase.auth.onAuthStateChange(function (event) {
+    supabase.auth.onAuthStateChange(
+        function (event) {
 
-        if (event === "SIGNED_OUT") {
+            if (event === "SIGNED_OUT") {
 
-            showLogin("You have signed out.");
+                showLogin(
+                    "You have signed out."
+                );
+
+            }
+
+            if (event === "PASSWORD_RECOVERY") {
+
+                showPasswordSetup(
+                    "Please create your new administrator password."
+                );
+
+            }
 
         }
+    );
 
-    });
 
+    // Start authentication checks
 
     checkExistingSession();
 
