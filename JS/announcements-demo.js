@@ -66,11 +66,21 @@
             const content = document.createElement("p");
 
             content.textContent = announcement.content;
-
-            card.appendChild(category);
+           
+            // Display announcement publication date
+            const publishedDate = document.createElement("small");
+            
+            publishedDate.className = "announcement-published-date";
+            
+            publishedDate.textContent = announcement.date
+                ? "Published: " + announcement.date
+                : "Publication date unavailable";
+           card.appendChild(category);
 
             card.appendChild(heading);
-
+            
+            card.appendChild(publishedDate);
+            
             card.appendChild(content);
 
             announcementList.appendChild(card);
