@@ -17,8 +17,73 @@
 </head>
 
 <body class="admin-page">
+    
+<!-- ADMINISTRATOR LOGIN SCREEN -->
 
-    <div class="admin-layout">
+<section id="adminLoginPanel" class="admin-login-panel">
+
+    <div class="admin-login-card">
+
+        <img
+            src="IMAGES/school-badge.png"
+            alt="Malizayo Primary School Badge"
+        >
+
+        <p class="admin-small-heading">
+            MALIZAYO PRIMARY SCHOOL
+        </p>
+
+        <h1>Administrator Login</h1>
+
+        <p>
+            Sign in to access the school administration dashboard.
+        </p>
+
+        <form id="adminLoginForm">
+
+            <label for="adminEmail">
+                Email Address
+            </label>
+
+            <input
+                type="email"
+                id="adminEmail"
+                placeholder="Enter administrator email"
+                autocomplete="username"
+                required
+            >
+
+            <label for="adminPassword">
+                Password
+            </label>
+
+            <input
+                type="password"
+                id="adminPassword"
+                placeholder="Enter password"
+                autocomplete="current-password"
+                required
+            >
+
+            <button type="submit" id="adminLoginButton">
+                Sign In
+            </button>
+
+        </form>
+
+        <p
+            id="adminLoginMessage"
+            role="status"
+            aria-live="polite">
+        </p>
+
+        <small>Authorised school administrator access only.</small>
+
+    </div>
+
+</section>
+
+   <div class="admin-layout" id="adminDashboard" hidden>
 
         <!-- SIDEBAR -->
 
