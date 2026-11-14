@@ -12,7 +12,7 @@
 
     // Your Supabase publishable key
     const SUPABASE_PUBLISHABLE_KEY =
-        "a955d9d9-e91f-4fd9-b1e7-d015af08ae04 ";
+        "sb_publishable_9Kh_hViyItJUnlVzDnY1uQ_s1G2He40 ";
 
 
     // Check whether the Supabase library loaded
