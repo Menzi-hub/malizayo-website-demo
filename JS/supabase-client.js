@@ -8,7 +8,7 @@
 
     // Your Supabase project URL
     const SUPABASE_URL =
-        "https://pdxyppmsotygvzlekojg.supabase.co/rest/v1/";
+        "https://pdxyppmsotygvzlekojg.supabase.co";
 
     // Your Supabase publishable key
     const SUPABASE_PUBLISHABLE_KEY =
