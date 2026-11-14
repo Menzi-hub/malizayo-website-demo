@@ -31,6 +31,8 @@
 
     const loginMessage =
         document.getElementById("adminLoginMessage");
+   const forgotPasswordButton =
+    document.getElementById("adminForgotPasswordButton");
 
     const passwordSetupForm =
         document.getElementById("adminPasswordSetupForm");
@@ -138,6 +140,7 @@
         !passwordInput ||
         !loginButton ||
         !loginMessage ||
+       !forgotPasswordButton ||
         !passwordSetupForm ||
         !newPasswordInput ||
         !confirmPasswordInput ||
@@ -157,6 +160,71 @@
     // Keep dashboard hidden until authentication
 
     showLogin("Please sign in to continue.");
+   // PASSWORD RECOVERY
+
+forgotPasswordButton.addEventListener(
+    "click",
+    async function () {
+
+        const email = emailInput.value.trim();
+
+        if (!email) {
+            loginMessage.textContent =
+                "Please enter your administrator email first.";
+
+            emailInput.focus();
+            return;
+        }
+
+        forgotPasswordButton.disabled = true;
+        forgotPasswordButton.textContent = "Sending...";
+
+        loginMessage.style.color = "#536477";
+        loginMessage.textContent = "Sending recovery email...";
+
+        try {
+
+            const { error } =
+                await supabase.auth.resetPasswordForEmail(
+                    email,
+                    {
+                        redirectTo:
+                            "https://menzi-hub.github.io/malizayo-website-demo/admin.html"
+                    }
+                );
+
+            if (error) {
+                throw error;
+            }
+
+            loginMessage.style.color = "#216638";
+
+            loginMessage.textContent =
+                "If this account exists, a password recovery email has been sent. Check your inbox and spam folder.";
+
+        } catch (error) {
+
+            console.error(
+                "Password recovery failed:",
+                error
+            );
+
+            loginMessage.style.color = "#922E26";
+
+            loginMessage.textContent =
+                "Unable to send recovery email. Please try again.";
+
+        } finally {
+
+            forgotPasswordButton.disabled = false;
+
+            forgotPasswordButton.textContent =
+                "Forgot Password?";
+
+        }
+
+    }
+);
 
 
     // NORMAL ADMINISTRATOR LOGIN
