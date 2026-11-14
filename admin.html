@@ -82,6 +82,84 @@
     </div>
 
 </section>
+    
+<!-- FIRST-TIME ADMINISTRATOR PASSWORD SETUP -->
+
+<section
+    id="adminPasswordSetupPanel"
+    class="admin-login-panel"
+    hidden
+    style="display: none;"
+>
+
+    <div class="admin-login-card">
+
+        <img
+            src="IMAGES/school-badge.png"
+            alt="Malizayo Primary School Badge"
+        >
+
+        <p class="admin-small-heading">
+            MALIZAYO PRIMARY SCHOOL
+        </p>
+
+        <h1>Create Your Password</h1>
+
+        <p>
+            Create a secure password for your administrator account.
+        </p>
+
+        <form id="adminPasswordSetupForm">
+
+            <label for="adminNewPassword">
+                New Password
+            </label>
+
+            <input
+                type="password"
+                id="adminNewPassword"
+                placeholder="Create a new password"
+                autocomplete="new-password"
+                minlength="12"
+                required
+            >
+
+            <label for="adminConfirmPassword">
+                Confirm Password
+            </label>
+
+            <input
+                type="password"
+                id="adminConfirmPassword"
+                placeholder="Enter password again"
+                autocomplete="new-password"
+                minlength="12"
+                required
+            >
+
+            <button
+                type="submit"
+                id="adminPasswordSetupButton"
+            >
+                Save Password
+            </button>
+
+        </form>
+
+        <p
+            id="adminPasswordSetupMessage"
+            role="status"
+            aria-live="polite">
+        </p>
+
+        <small>
+            Use a unique password of at least 12 characters.
+        </small>
+
+    </div>
+
+</section>
+
 
    <div class="admin-layout" id="adminDashboard" hidden>
 
