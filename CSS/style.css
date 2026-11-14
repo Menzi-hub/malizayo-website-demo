@@ -2352,7 +2352,16 @@ footer {
     font-weight: bold;
     letter-spacing: 1px;
 }
+/* ANNOUNCEMENT PUBLICATION DATE */
 
+.announcement-published-date {
+    display: block;
+    color: #718096;
+    font-size: 12px;
+    margin-top: -8px;
+    margin-bottom: 12px;
+    font-style: italic;
+}
 .announcement-card h3 {
     color: #173b5c;
     margin: 15px 0;
