@@ -2504,3 +2504,125 @@ footer {
     cursor: pointer;
     align-self: flex-start;
 }
+
+/* ==================================
+   MALIZAYO ADMINISTRATOR LOGIN
+================================== */
+
+/* Keep the dashboard hidden until login */
+
+.admin-layout[hidden] {
+    display: none !important;
+}
+
+.admin-login-panel {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 20px;
+    background-color: #F3F6FA;
+}
+
+.admin-login-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 35px;
+    background-color: white;
+    border: 1px solid #DCE4ED;
+    border-top: 5px solid #F4C95D;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(20, 45, 75, 0.08);
+}
+
+.admin-login-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
+
+.admin-login-card h1 {
+    color: #173B5C;
+    font-size: 27px;
+    margin: 12px 0;
+}
+
+.admin-login-card > p {
+    color: #536477;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.admin-login-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+}
+
+.admin-login-card label {
+    color: #173B5C;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.admin-login-card input {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #CBD5E1;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+}
+
+.admin-login-card input:focus {
+    outline: none;
+    border-color: #173B5C;
+    box-shadow: 0 0 0 2px rgba(23, 59, 92, 0.12);
+}
+
+.admin-login-card button {
+    background-color: #173B5C;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 12px;
+}
+
+.admin-login-card button:hover {
+    background-color: #28577D;
+}
+
+#adminLoginMessage {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #922E26;
+}
+
+.admin-login-card > small {
+    display: block;
+    margin-top: 20px;
+    color: #718096;
+    font-size: 12px;
+}
+
+/* MOBILE LOGIN DESIGN */
+
+@media (max-width: 480px) {
+
+    .admin-login-card {
+        padding: 25px 20px;
+    }
+
+    .admin-login-card h1 {
+        font-size: 23px;
+    }
+
+}
+
