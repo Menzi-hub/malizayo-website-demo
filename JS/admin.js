@@ -698,6 +698,7 @@ if (sharedSupabase) {
             }
 
           
+
 // LOAD ANNOUNCEMENTS WHEN ADMIN SESSION IS AVAILABLE
 
 if (sharedSupabase) {
@@ -722,13 +723,22 @@ if (sharedSupabase) {
 
             if (event === "SIGNED_OUT") {
 
-                adminAnnouncementList.replaceChildren();
+                if (adminAnnouncementList) {
+                    adminAnnouncementList.replaceChildren();
+                }
 
-                announcementMessage.textContent =
-                    "Please sign in to manage announcements.";
+                if (announcementMessage) {
+                    announcementMessage.textContent =
+                        "Please sign in to manage announcements.";
+                }
 
-        
+            }
 
+        }
+    );
 
+}
+
+// KEEP THIS AS THE FINAL LINE OF THE FILE
 
 })();
