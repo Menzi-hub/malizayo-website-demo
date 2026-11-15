@@ -268,8 +268,10 @@
 updateDashboardCounts();
 
 
+
 /* =====================================
    MANAGE SCHOOL ANNOUNCEMENTS
+   SHARED SUPABASE DATABASE
 ===================================== */
 
 const announcementForm =
@@ -290,69 +292,60 @@ const announcementMessage =
 const adminAnnouncementList =
     document.getElementById("adminAnnouncementList");
 
-const announcementStorageKey =
-    "malizayoDemoAnnouncements";
-   // Keep track of the announcement being edited
+const sharedSupabase = window.malizayoSupabase;
+
 let editingAnnouncementId = null;
 
+const announcementSubmitButton =
+    announcementForm
+        ? announcementForm.querySelector("button")
+        : null;
 
-// Load saved demonstration announcements
 
-function getAnnouncements() {
+// CHECK ADMINISTRATOR SESSION
 
-    try {
+async function verifyAnnouncementAdmin() {
 
-        const saved =
-            localStorage.getItem(announcementStorageKey);
-
-        return saved ? JSON.parse(saved) : [];
-
-    } catch (error) {
-
-        return [];
-
+    if (!sharedSupabase) {
+        throw new Error("Database connection unavailable.");
     }
+
+    const { data, error } =
+        await sharedSupabase.auth.getUser();
+
+    if (error || !data.user) {
+        throw new Error(
+            "Please sign in as the school administrator."
+        );
+    }
+
+    return data.user;
 
 }
 
 
-// Save announcements in this browser
+// DISPLAY SHARED ANNOUNCEMENTS
 
-function saveAnnouncements(announcements) {
+function displayAdminAnnouncements(announcements) {
 
-    localStorage.setItem(
-        announcementStorageKey,
-        JSON.stringify(announcements)
-    );
-
-}
-
-
-// Display announcements in admin dashboard
-
-function displayAdminAnnouncements() {
-
-    if (!adminAnnouncementList) {
-        return;
-    }
-
-    const announcements = getAnnouncements();
+    if (!adminAnnouncementList) return;
 
     adminAnnouncementList.replaceChildren();
 
-    if (announcements.length === 0) {
+    if (!announcements || announcements.length === 0) {
 
         const emptyMessage =
             document.createElement("p");
 
         emptyMessage.textContent =
-            "No announcements published yet.";
+            "No shared announcements published yet.";
 
         adminAnnouncementList.appendChild(emptyMessage);
 
         return;
 
     }
+
 
     announcements.forEach(function (announcement) {
 
@@ -365,53 +358,367 @@ function displayAdminAnnouncements() {
         const category =
             document.createElement("p");
 
+        const publishedDate =
+            document.createElement("p");
+
         const content =
             document.createElement("p");
 
+        const editButton =
+            document.createElement("button");
+
         const removeButton =
             document.createElement("button");
-       const editButton =
-          document.createElement("button");
 
 
         heading.textContent = announcement.title;
 
         category.textContent = announcement.category;
 
+        publishedDate.textContent =
+            "Published: " +
+            new Date(
+                announcement.published_at
+            ).toLocaleDateString("en-ZA");
+
         content.textContent = announcement.content;
 
-        removeButton.textContent = "Remove Announcement";
-       editButton.type = "button";
-editButton.textContent = "Edit Announcement";
 
-      editButton.addEventListener("click", function () {
+        // EDIT ANNOUNCEMENT
 
-    editingAnnouncementId = announcement.id;
+        editButton.type = "button";
 
-    announcementTitle.value = announcement.title;
+        editButton.textContent =
+            "Edit Announcement";
 
-    announcementCategory.value = announcement.category;
+        editButton.addEventListener("click", function () {
 
-    announcementContent.value = announcement.content;
+            editingAnnouncementId = announcement.id;
 
-    announcementMessage.textContent =
-        "Announcement loaded for editing.";
+            announcementTitle.value =
+                announcement.title;
 
-    announcementTitle.focus();
+            announcementCategory.value =
+                announcement.category;
 
-});
-        removeButton.addEventListener("click", function () {
+            announcementContent.value =
+                announcement.content;
 
-            const updatedAnnouncements =
-                getAnnouncements().filter(function (item) {
+            announcementSubmitButton.textContent =
+                "Update Announcement";
 
-                    return item.id !== announcement.id;
+            announcementMessage.textContent =
+                "Announcement loaded for editing.";
 
+            announcementTitle.focus();
+
+        });
+
+
+        // REMOVE ANNOUNCEMENT
+
+        removeButton.type = "button";
+
+        removeButton.textContent =
+            "Remove Announcement";
+
+        removeButton.addEventListener(
+            "click",
+            async function () {
+
+                if (!window.confirm(
+                    "Are you sure you want to remove this announcement?"
+                )) {
+                    return;
+                }
+
+                removeButton.disabled = true;
+
+                try {
+
+                    await verifyAnnouncementAdmin();
+
+                    const { data, error } =
+                        await sharedSupabase
+                            .from("announcements")
+                            .delete()
+                            .eq("id", announcement.id)
+                            .select("id");
+
+                    if (error) throw error;
+
+                    if (!data || data.length === 0) {
+                        throw new Error(
+                            "The announcement was not removed. Check administrator permissions."
+                        );
+                    }
+
+                    announcementMessage.textContent =
+                        "Announcement removed from the shared database.";
+
+                    await loadAdminAnnouncements();
+
+                } catch (error) {
+
+                    console.error(
+                        "Announcement removal failed:",
+                        error
+                    );
+
+                    announcementMessage.textContent =
+                        error.message;
+
+                    removeButton.disabled = false;
+
+                }
+
+            }
+        );
+
+
+        card.appendChild(heading);
+        card.appendChild(category);
+        card.appendChild(publishedDate);
+        card.appendChild(content);
+        card.appendChild(editButton);
+        card.appendChild(removeButton);
+
+        adminAnnouncementList.appendChild(card);
+
+    });
+
+}
+
+
+// LOAD ANNOUNCEMENTS FROM DATABASE
+
+async function loadAdminAnnouncements() {
+
+    if (!adminAnnouncementList) return;
+
+    try {
+
+        await verifyAnnouncementAdmin();
+
+        const { data, error } =
+            await sharedSupabase
+                .from("announcements")
+                .select(
+                    "id, title, category, content, published_at, is_published"
+                )
+                .order("published_at", {
+                    ascending: false
                 });
 
-            saveAnnouncements(updatedAnnouncements);
+        if (error) throw error;
 
-            displayAdminAnnouncements();
+        displayAdminAnnouncements(data);
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load shared announcements:",
+            error
+        );
+
+        adminAnnouncementList.textContent =
+            "Unable to load announcements. Please sign in and try again.";
+
+        announcementMessage.textContent =
+            error.message;
+
+    }
+
+}
+
+
+// PUBLISH OR UPDATE ANNOUNCEMENT
+
+if (announcementForm) {
+
+    announcementForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+            const title =
+                announcementTitle.value.trim();
+
+            const category =
+                announcementCategory.value;
+
+            const content =
+                announcementContent.value.trim();
+
+
+            if (!title || !category || !content) {
+
+                announcementMessage.textContent =
+                    "Please complete all announcement fields.";
+
+                return;
+
+            }
+
+
+            if (title.length > 100 || content.length > 1000) {
+
+                announcementMessage.textContent =
+                    "The title or message exceeds the allowed length.";
+
+                return;
+
+            }
+
+
+            announcementSubmitButton.disabled = true;
+
+            announcementSubmitButton.textContent =
+                editingAnnouncementId
+                    ? "Updating..."
+                    : "Publishing...";
+
+
+            try {
+
+                await verifyAnnouncementAdmin();
+
+                let data;
+                let error;
+
+                if (editingAnnouncementId) {
+
+                    // UPDATE EXISTING ANNOUNCEMENT
+                    // Keep its original publication date.
+
+                    const result =
+                        await sharedSupabase
+                            .from("announcements")
+                            .update({
+                                title: title,
+                                category: category,
+                                content: content,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq("id", editingAnnouncementId)
+                            .select("id");
+
+                    data = result.data;
+                    error = result.error;
+
+                    if (!error && (!data || data.length === 0)) {
+                        throw new Error(
+                            "Announcement could not be updated. Check administrator permissions."
+                        );
+                    }
+
+                } else {
+
+                    // PUBLISH NEW ANNOUNCEMENT
+
+                    const result =
+                        await sharedSupabase
+                            .from("announcements")
+                            .insert({
+                                title: title,
+                                category: category,
+                                content: content,
+                                is_published: true
+                            })
+                            .select("id")
+                            .single();
+
+                    data = result.data;
+                    error = result.error;
+
+                }
+
+
+                if (error) throw error;
+
+                const wasEditing =
+                    Boolean(editingAnnouncementId);
+
+                editingAnnouncementId = null;
+
+                announcementForm.reset();
+
+                announcementMessage.textContent =
+                    wasEditing
+                        ? "Announcement updated successfully in the shared database."
+                        : "Announcement published successfully to the shared database.";
+
+                await loadAdminAnnouncements();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Announcement saving failed:",
+                    error
+                );
+
+                announcementMessage.textContent =
+                    error.message ||
+                    "Unable to save announcement.";
+
+            } finally {
+
+                announcementSubmitButton.disabled = false;
+
+                announcementSubmitButton.textContent =
+                    editingAnnouncementId
+                        ? "Update Announcement"
+                        : "Publish Announcement";
+
+            }
+
+        }
+    );
+
+}
+
+
+// LOAD WHEN ADMINISTRATOR SIGNS IN
+
+if (sharedSupabase) {
+
+    sharedSupabase.auth.onAuthStateChange(
+        function (event) {
+
+            if (event === "SIGNED_IN") {
+
+                // Run after the authentication callback finishes.
+                window.setTimeout(
+                    loadAdminAnnouncements,
+                    0
+                );
+
+            }
+
+            if (event === "SIGNED_OUT") {
+
+                adminAnnouncementList.replaceChildren();
+
+                announcementMessage.textContent =
+                    "Please sign in to manage announcements.";
+
+            }
+
+        }
+    );
+
+}
+
+
+// INITIAL DATABASE CHECK
+
+window.setTimeout(
+    loadAdminAnnouncements,
+    0
+);
+
 
         });
 
