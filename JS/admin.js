@@ -727,13 +727,7 @@ if (sharedSupabase) {
                 announcementMessage.textContent =
                     "Please sign in to manage announcements.";
 
-            }
-
-        }
-    );
-
-}
-
+        
 
             }
 
