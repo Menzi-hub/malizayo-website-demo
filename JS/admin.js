@@ -697,12 +697,43 @@ if (sharedSupabase) {
 
             }
 
+          
+// LOAD ANNOUNCEMENTS WHEN ADMIN SESSION IS AVAILABLE
+
+if (sharedSupabase) {
+
+    sharedSupabase.auth.onAuthStateChange(
+        function (event, session) {
+
+            // Load on first page visit and after sign-in
+            if (
+                (
+                    event === "INITIAL_SESSION" ||
+                    event === "SIGNED_IN"
+                ) && session
+            ) {
+
+                window.setTimeout(
+                    loadAdminAnnouncements,
+                    0
+                );
+
+            }
+
             if (event === "SIGNED_OUT") {
 
                 adminAnnouncementList.replaceChildren();
 
                 announcementMessage.textContent =
                     "Please sign in to manage announcements.";
+
+            }
+
+        }
+    );
+
+}
+
 
             }
 
