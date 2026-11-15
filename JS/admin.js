@@ -701,6 +701,9 @@ if (sharedSupabase) {
 
 // LOAD ANNOUNCEMENTS WHEN ADMIN SESSION IS AVAILABLE
 
+
+// LOAD ANNOUNCEMENTS WHEN ADMIN SESSION IS AVAILABLE
+
 if (sharedSupabase) {
 
     sharedSupabase.auth.onAuthStateChange(
@@ -721,6 +724,7 @@ if (sharedSupabase) {
 
             }
 
+            // Clear the list after sign-out
             if (event === "SIGNED_OUT") {
 
                 if (adminAnnouncementList) {
@@ -739,6 +743,5 @@ if (sharedSupabase) {
 
 }
 
-// KEEP THIS AS THE FINAL LINE OF THE FILE
 
 })();
