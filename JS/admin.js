@@ -680,26 +680,6 @@ if (announcementForm) {
 }
 
 
-// LOAD WHEN ADMINISTRATOR SIGNS IN
-
-if (sharedSupabase) {
-
-    sharedSupabase.auth.onAuthStateChange(
-        function (event) {
-
-            if (event === "SIGNED_IN") {
-
-                // Run after the authentication callback finishes.
-                window.setTimeout(
-                    loadAdminAnnouncements,
-                    0
-                );
-
-            }
-
-          
-
-// LOAD ANNOUNCEMENTS WHEN ADMIN SESSION IS AVAILABLE
 
 
 // LOAD ANNOUNCEMENTS WHEN ADMIN SESSION IS AVAILABLE
