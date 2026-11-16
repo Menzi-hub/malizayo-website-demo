@@ -283,111 +283,366 @@
                    9. SUBMIT ADMISSION DEMONSTRATION
                 ===================================== */
 
-                admissionForm.addEventListener(
-                    "submit",
-                    function (event) {
+                
+/* =====================================
+   9. SUBMIT ADMISSION TO SUPABASE
+===================================== */
 
-                        event.preventDefault();
+admissionForm.addEventListener(
+    "submit",
+    async function (event) {
+
+        event.preventDefault();
+
+        const supabase = window.malizayoSupabase;
+
+        const submitButton =
+            admissionForm.querySelector(
+                'button[type="submit"]'
+            );
+
+        let uploadedAnyFile = false;
+
+        // CHECK SIGNATURE
+
+        if (!hasSignature) {
+            message.textContent =
+                "Please draw your signature before submitting.";
+            message.style.display = "block";
+            return;
+        }
+
+        // CHECK DECLARATION
+
+        const declaration =
+            document.getElementById("declaration");
+
+        if (!declaration.checked) {
+            message.textContent =
+                "Please accept the declaration before submitting.";
+            message.style.display = "block";
+            return;
+        }
+
+        // CHECK DATABASE CONNECTION
+
+        if (!supabase) {
+            message.textContent =
+                "Database connection unavailable. Please try again.";
+            message.style.display = "block";
+            return;
+        }
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Submitting...";
+
+        try {
+
+            const applicationId = crypto.randomUUID();
+
+            const bucket = "admissions-documents";
+
+            const uploadedPaths = {};
 
 
-                        // Check the signature
+            // UPLOAD SUPPORTING DOCUMENTS
 
-                        if (!hasSignature) {
+            const documentFields = [
+                {
+                    inputId: "birthCertificate",
+                    column: "birth_certificate_path",
+                    prefix: "birth-certificate"
+                },
+                {
+                    inputId: "parentID",
+                    column: "parent_id_path",
+                    prefix: "parent-id"
+                },
+                {
+                    inputId: "proofResidence",
+                    column: "proof_residence_path",
+                    prefix: "proof-residence"
+                },
+                {
+                    inputId: "previousReport",
+                    column: "previous_report_path",
+                    prefix: "previous-report"
+                }
+            ];
 
-                            alert(
-                                "Please draw your signature before submitting."
-                            );
 
-                            return;
+            async function uploadFile(
+                file,
+                prefix
+            ) {
 
-                        }
+                if (file.size > 5 * 1024 * 1024) {
+                    throw new Error(
+                        "Each document must be 5 MB or smaller."
+                    );
+                }
 
+                const extension =
+                    file.name.split(".").pop().toLowerCase();
 
-                        // Check uploaded documents
+                const mimeTypes = {
+                    pdf: "application/pdf",
+                    jpg: "image/jpeg",
+                    jpeg: "image/jpeg",
+                    png: "image/png"
+                };
 
-                        const documentInputs =
-                            admissionForm.querySelectorAll(
-                                'input[type="file"]'
-                            );
+                const contentType = mimeTypes[extension];
 
-                        const maximumFileSize =
-                            5 * 1024 * 1024;
+                if (!contentType) {
+                    throw new Error(
+                        "Only PDF, JPG, JPEG and PNG files are accepted."
+                    );
+                }
 
-                        for (const input of documentInputs) {
+                if (
+                    file.type &&
+                    file.type !== contentType
+                ) {
+                    throw new Error(
+                        "The selected document type is invalid."
+                    );
+                }
 
-                            const file = input.files[0];
+                const filePath =
+                    "applications/" +
+                    applicationId +
+                    "/" +
+                    prefix +
+                    "-" +
+                    crypto.randomUUID() +
+                    "." +
+                    extension;
 
-                            if (!file) {
-                                continue;
+                const { data, error } =
+                    await supabase.storage
+                        .from(bucket)
+                        .upload(
+                            filePath,
+                            file,
+                            {
+                                contentType: contentType,
+                                upsert: false
                             }
+                        );
 
-                            const extension =
-                                file.name.split(".").pop().toLowerCase();
+                if (error) {
+                    throw error;
+                }
 
-                            const allowedExtensions = [
-                                "pdf",
-                                "jpg",
-                                "jpeg",
-                                "png"
-                            ];
+                uploadedAnyFile = true;
+
+                return data.path;
+
+            }
 
 
-                            // Check file type
+            for (const field of documentFields) {
 
-                            if (!allowedExtensions.includes(extension)) {
+                const input =
+                    document.getElementById(
+                        field.inputId
+                    );
 
-                                alert(
-                                    "Please select PDF, JPG or PNG."
+                const file = input.files[0];
+
+                uploadedPaths[field.column] = file
+                    ? await uploadFile(file, field.prefix)
+                    : null;
+
+            }
+
+
+            // CONVERT DRAWN SIGNATURE TO PNG
+
+            const signatureBlob = await new Promise(
+                function (resolve, reject) {
+
+                    signatureCanvas.toBlob(
+                        function (blob) {
+
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                reject(
+                                    new Error(
+                                        "Could not process the signature."
+                                    )
                                 );
-
-                                input.value = "";
-
-                                return;
-
                             }
 
+                        },
+                        "image/png"
+                    );
 
-                            // Check file size
+                }
+            );
 
-                            if (file.size > maximumFileSize) {
 
-                                alert(
-                                    "The document must not exceed 5 MB."
-                                );
+            const signaturePath =
+                "applications/" +
+                applicationId +
+                "/signature.png";
 
-                                input.value = "";
 
-                                return;
-
-                            }
-
+            const { data: signatureData, error: signatureError } =
+                await supabase.storage
+                    .from(bucket)
+                    .upload(
+                        signaturePath,
+                        signatureBlob,
+                        {
+                            contentType: "image/png",
+                            upsert: false
                         }
+                    );
+
+            if (signatureError) {
+                throw signatureError;
+            }
+
+            uploadedAnyFile = true;
 
 
-                        // Display confirmation
+            // PREPARE APPLICATION RECORD
 
-                        message.style.display = "block";
+            const application = {
 
-                        message.textContent =
-                            "Demonstration successful! " +
-                            "Your signature has been drawn and the " +
-                            "browser checks have passed. " +
-                            "Reference: MPS-DEMO-0001. " +
-                            "Nothing has been sent, uploaded or saved. " +
-                            "This is not an official admission submission.";
+                id: applicationId,
+
+                learner_name:
+                    document.getElementById("learnerName").value.trim(),
+
+                date_of_birth:
+                    document.getElementById("dateOfBirth").value,
+
+                grade_applying_for:
+                    document.getElementById("grade").value,
+
+                previous_school:
+                    document.getElementById("previousSchool").value.trim()
+                    || null,
+
+                parent_guardian_name:
+                    document.getElementById("parentName").value.trim(),
+
+                relationship_to_learner:
+                    document.getElementById("relationship").value,
+
+                parent_phone:
+                    document.getElementById("parentPhone").value.trim(),
+
+                parent_email:
+                    document.getElementById("parentEmail").value.trim()
+                    || null,
+
+                residential_address:
+                    document.getElementById("address").value.trim(),
+
+                signature_name:
+                    document.getElementById("signatureName").value.trim(),
+
+                declaration_accepted: true,
+
+                birth_certificate_path:
+                    uploadedPaths.birth_certificate_path,
+
+                parent_id_path:
+                    uploadedPaths.parent_id_path,
+
+                proof_residence_path:
+                    uploadedPaths.proof_residence_path,
+
+                previous_report_path:
+                    uploadedPaths.previous_report_path,
+
+                signature_path:
+                    signatureData.path
+
+            };
 
 
-                        message.scrollIntoView({
+            // SAVE APPLICATION IN SUPABASE
 
-                            behavior: "smooth",
+            const { error: databaseError } =
+                await supabase
+                    .from("admissions")
+                    .insert(application);
 
-                            block: "center"
+            if (databaseError) {
+                throw databaseError;
+            }
 
-                        });
 
-                    }
-                );
+            // SUCCESS
 
+            const reference =
+                "MPS-" +
+                applicationId.slice(0, 8).toUpperCase();
+
+            message.style.display = "block";
+
+            message.textContent =
+                "DEMONSTRATION TEST SUCCESSFUL! " +
+                "Application saved successfully. " +
+                "Reference: " + reference +
+                ". This is a test submission, not an official admission.";
+
+            admissionForm.reset();
+
+            context.clearRect(
+                0,
+                0,
+                signatureCanvas.width,
+                signatureCanvas.height
+            );
+
+            hasSignature = false;
+
+            signatureStatus.textContent =
+                "No signature yet.";
+
+
+            message.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Admission submission failed:",
+                error
+            );
+
+            message.style.display = "block";
+
+            message.textContent = uploadedAnyFile
+                ? "The application could not be completed. Some documents may have reached private storage. Please contact the school before retrying."
+                : "Application submission failed. Please check your entries and try again.";
+
+        } finally {
+
+            submitButton.disabled = false;
+
+            submitButton.textContent =
+                "Submit Application";
+
+        }
+
+    }
+);
+
+
+                     
+
+                  
             }
 
         }
