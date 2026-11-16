@@ -279,13 +279,12 @@
                 });
 
 
-                /* =====================================
-                   9. SUBMIT ADMISSION DEMONSTRATION
-                ===================================== */
+              
 
-                
+
 /* =====================================
-   9. SUBMIT ADMISSION TO SUPABASE
+   9. SECURE ADMISSION SUBMISSION
+   CLOUDFLARE + SUPABASE EDGE FUNCTION
 ===================================== */
 
 admissionForm.addEventListener(
@@ -294,168 +293,116 @@ admissionForm.addEventListener(
 
         event.preventDefault();
 
-        const supabase = window.malizayoSupabase;
-
         const submitButton =
             admissionForm.querySelector(
                 'button[type="submit"]'
             );
 
-        let uploadedAnyFile = false;
-
-        // CHECK SIGNATURE
-
-        if (!hasSignature) {
-            message.textContent =
-                "Please draw your signature before submitting.";
-            message.style.display = "block";
-            return;
-        }
-
-        // CHECK DECLARATION
+        const supabase = window.malizayoSupabase;
 
         const declaration =
             document.getElementById("declaration");
 
-        if (!declaration.checked) {
+        // CHECK SIGNATURE
+
+        if (!hasSignature) {
+
             message.textContent =
-                "Please accept the declaration before submitting.";
+                "Please draw your signature before submitting.";
+
             message.style.display = "block";
             return;
+
         }
 
-        // CHECK DATABASE CONNECTION
+        // CHECK DECLARATION
 
-        if (!supabase) {
+        if (!declaration.checked) {
+
             message.textContent =
-                "Database connection unavailable. Please try again.";
+                "Please accept the declaration before submitting.";
+
             message.style.display = "block";
             return;
+
+        }
+
+        // CHECK SUPABASE CONNECTION
+
+        if (!supabase) {
+
+            message.textContent =
+                "Database connection unavailable. Please try again.";
+
+            message.style.display = "block";
+            return;
+
+        }
+
+        // CHECK CLOUDFLARE TOKEN
+
+        const turnstileInput =
+            admissionForm.querySelector(
+                '[name="cf-turnstile-response"]'
+            );
+
+        const turnstileToken =
+            turnstileInput
+                ? turnstileInput.value
+                : "";
+
+        if (!turnstileToken) {
+
+            message.textContent =
+                "Please complete the security check.";
+
+            message.style.display = "block";
+            return;
+
         }
 
         submitButton.disabled = true;
-        submitButton.textContent = "Submitting...";
+        submitButton.textContent = "Submitting securely...";
 
         try {
 
-            const applicationId = crypto.randomUUID();
+            // COLLECT APPLICATION DETAILS
 
-            const bucket = "admissions-documents";
+            const application = {
 
-            const uploadedPaths = {};
+                learner_name:
+                    document.getElementById("learnerName").value.trim(),
 
+                date_of_birth:
+                    document.getElementById("dateOfBirth").value,
 
-            // UPLOAD SUPPORTING DOCUMENTS
+                grade_applying_for:
+                    document.getElementById("grade").value,
 
-            const documentFields = [
-                {
-                    inputId: "birthCertificate",
-                    column: "birth_certificate_path",
-                    prefix: "birth-certificate"
-                },
-                {
-                    inputId: "parentID",
-                    column: "parent_id_path",
-                    prefix: "parent-id"
-                },
-                {
-                    inputId: "proofResidence",
-                    column: "proof_residence_path",
-                    prefix: "proof-residence"
-                },
-                {
-                    inputId: "previousReport",
-                    column: "previous_report_path",
-                    prefix: "previous-report"
-                }
-            ];
+                previous_school:
+                    document.getElementById("previousSchool").value.trim(),
 
+                parent_guardian_name:
+                    document.getElementById("parentName").value.trim(),
 
-            async function uploadFile(
-                file,
-                prefix
-            ) {
+                relationship_to_learner:
+                    document.getElementById("relationship").value,
 
-                if (file.size > 5 * 1024 * 1024) {
-                    throw new Error(
-                        "Each document must be 5 MB or smaller."
-                    );
-                }
+                parent_phone:
+                    document.getElementById("parentPhone").value.trim(),
 
-                const extension =
-                    file.name.split(".").pop().toLowerCase();
+                parent_email:
+                    document.getElementById("parentEmail").value.trim(),
 
-                const mimeTypes = {
-                    pdf: "application/pdf",
-                    jpg: "image/jpeg",
-                    jpeg: "image/jpeg",
-                    png: "image/png"
-                };
+                residential_address:
+                    document.getElementById("address").value.trim(),
 
-                const contentType = mimeTypes[extension];
+                signature_name:
+                    document.getElementById("signatureName").value.trim(),
 
-                if (!contentType) {
-                    throw new Error(
-                        "Only PDF, JPG, JPEG and PNG files are accepted."
-                    );
-                }
+                declaration_accepted: true
 
-                if (
-                    file.type &&
-                    file.type !== contentType
-                ) {
-                    throw new Error(
-                        "The selected document type is invalid."
-                    );
-                }
-
-                const filePath =
-                    "applications/" +
-                    applicationId +
-                    "/" +
-                    prefix +
-                    "-" +
-                    crypto.randomUUID() +
-                    "." +
-                    extension;
-
-                const { data, error } =
-                    await supabase.storage
-                        .from(bucket)
-                        .upload(
-                            filePath,
-                            file,
-                            {
-                                contentType: contentType,
-                                upsert: false
-                            }
-                        );
-
-                if (error) {
-                    throw error;
-                }
-
-                uploadedAnyFile = true;
-
-                return data.path;
-
-            }
-
-
-            for (const field of documentFields) {
-
-                const input =
-                    document.getElementById(
-                        field.inputId
-                    );
-
-                const file = input.files[0];
-
-                uploadedPaths[field.column] = file
-                    ? await uploadFile(file, field.prefix)
-                    : null;
-
-            }
+            };
 
 
             // CONVERT DRAWN SIGNATURE TO PNG
@@ -471,7 +418,7 @@ admissionForm.addEventListener(
                             } else {
                                 reject(
                                     new Error(
-                                        "Could not process the signature."
+                                        "Unable to process your signature."
                                     )
                                 );
                             }
@@ -484,114 +431,124 @@ admissionForm.addEventListener(
             );
 
 
-            const signaturePath =
-                "applications/" +
-                applicationId +
-                "/signature.png";
+            // PREPARE MULTIPART REQUEST
+
+            const formData = new FormData();
+
+            formData.append(
+                "application",
+                JSON.stringify(application)
+            );
+
+            formData.append(
+                "turnstileToken",
+                turnstileToken
+            );
 
 
-            const { data: signatureData, error: signatureError } =
-                await supabase.storage
-                    .from(bucket)
-                    .upload(
-                        signaturePath,
-                        signatureBlob,
-                        {
-                            contentType: "image/png",
-                            upsert: false
-                        }
-                    );
+            // ADD FOUR SUPPORTING DOCUMENTS
 
-            if (signatureError) {
-                throw signatureError;
+            const documentFields = [
+                "birthCertificate",
+                "parentID",
+                "proofResidence",
+                "previousReport"
+            ];
+
+            documentFields.forEach(function (field) {
+
+                const input =
+                    document.getElementById(field);
+
+                if (input && input.files.length > 0) {
+
+                    const file = input.files[0];
+
+                    if (file.size > 5 * 1024 * 1024) {
+                        throw new Error(
+                            "Each document must be 5 MB or smaller."
+                        );
+                    }
+
+                    formData.append(field, file);
+
+                }
+
+            });
+
+
+            // ADD DRAWN SIGNATURE
+
+            const signatureFile = new File(
+                [signatureBlob],
+                "signature.png",
+                {
+                    type: "image/png"
+                }
+            );
+
+            formData.append(
+                "signature",
+                signatureFile
+            );
+
+
+            // SEND TO SECURE SUPABASE EDGE FUNCTION
+
+            const { data, error } =
+                await supabase.functions.invoke(
+                    "submit-admission",
+                    {
+                        body: formData
+                    }
+                );
+
+
+            if (error) {
+
+                let errorMessage = error.message;
+
+                try {
+
+                    if (error.context) {
+
+                        const errorDetails =
+                            await error.context.json();
+
+                        errorMessage =
+                            errorDetails.message ||
+                            errorMessage;
+
+                    }
+
+                } catch (ignored) {
+                    // Keep the original error message.
+                }
+
+                throw new Error(errorMessage);
+
             }
 
-            uploadedAnyFile = true;
 
+            if (!data || !data.success) {
 
-            // PREPARE APPLICATION RECORD
+                throw new Error(
+                    data?.message ||
+                    "The application could not be submitted."
+                );
 
-            const application = {
-
-                id: applicationId,
-
-                learner_name:
-                    document.getElementById("learnerName").value.trim(),
-
-                date_of_birth:
-                    document.getElementById("dateOfBirth").value,
-
-                grade_applying_for:
-                    document.getElementById("grade").value,
-
-                previous_school:
-                    document.getElementById("previousSchool").value.trim()
-                    || null,
-
-                parent_guardian_name:
-                    document.getElementById("parentName").value.trim(),
-
-                relationship_to_learner:
-                    document.getElementById("relationship").value,
-
-                parent_phone:
-                    document.getElementById("parentPhone").value.trim(),
-
-                parent_email:
-                    document.getElementById("parentEmail").value.trim()
-                    || null,
-
-                residential_address:
-                    document.getElementById("address").value.trim(),
-
-                signature_name:
-                    document.getElementById("signatureName").value.trim(),
-
-                declaration_accepted: true,
-
-                birth_certificate_path:
-                    uploadedPaths.birth_certificate_path,
-
-                parent_id_path:
-                    uploadedPaths.parent_id_path,
-
-                proof_residence_path:
-                    uploadedPaths.proof_residence_path,
-
-                previous_report_path:
-                    uploadedPaths.previous_report_path,
-
-                signature_path:
-                    signatureData.path
-
-            };
-
-
-            // SAVE APPLICATION IN SUPABASE
-
-            const { error: databaseError } =
-                await supabase
-                    .from("admissions")
-                    .insert(application);
-
-            if (databaseError) {
-                throw databaseError;
             }
 
 
-            // SUCCESS
-
-            const reference =
-                "MPS-" +
-                applicationId.slice(0, 8).toUpperCase();
+            // DISPLAY SUCCESS
 
             message.style.display = "block";
 
             message.textContent =
                 "DEMONSTRATION TEST SUCCESSFUL! " +
-                "Application saved successfully. " +
-                "Reference: " + reference +
-                ". This is a test submission, not an official admission.";
+                "Secure submission completed. " +
+                "Reference: " + data.reference +
+                ". This is not an official admission.";
 
             admissionForm.reset();
 
@@ -617,17 +574,23 @@ admissionForm.addEventListener(
         } catch (error) {
 
             console.error(
-                "Admission submission failed:",
+                "Secure admission submission failed:",
                 error
             );
 
             message.style.display = "block";
 
-            message.textContent = uploadedAnyFile
-                ? "The application could not be completed. Some documents may have reached private storage. Please contact the school before retrying."
-                : "Application submission failed. Please check your entries and try again.";
+            message.textContent =
+                error.message ||
+                "Submission failed. Please try again.";
 
         } finally {
+
+            // TURNSTILE TOKENS ARE SINGLE-USE
+
+            if (window.turnstile) {
+                window.turnstile.reset();
+            }
 
             submitButton.disabled = false;
 
