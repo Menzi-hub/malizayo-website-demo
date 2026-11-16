@@ -1100,53 +1100,65 @@ if (sharedSupabase) {
     sharedSupabase.auth.onAuthStateChange(
         function (event, session) {
 
-            // Load on first page visit and after sign-in
+            // Load announcements and admissions
+            // on first session and after sign-in
+
             if (
-    (
-        event === "INITIAL_SESSION" ||
-        event === "SIGNED_IN"
-    ) && session
-) {
+                (
+                    event === "INITIAL_SESSION" ||
+                    event === "SIGNED_IN"
+                ) && session
+            ) {
 
-    window.setTimeout(function () {
+                window.setTimeout(function () {
 
-        loadAdminAnnouncements();
-        loadAdminApplications();
+                    loadAdminAnnouncements();
+                    loadAdminApplications();
 
-    }, 0);
+                }, 0);
 
-}
+            }
 
-            // Clear the list after sign-out
-          // Clear sensitive admission information on sign-out
 
-if (admissionsTableBody) {
-    admissionsTableBody.replaceChildren();
-}
+            // Clear sensitive information after sign-out
 
-if (admissionDetailsPanel) {
-    admissionDetailsPanel.hidden = true;
-}
+            if (event === "SIGNED_OUT") {
 
-if (admissionDetailsContent) {
-    admissionDetailsContent.replaceChildren();
-}
+                if (adminAnnouncementList) {
+                    adminAnnouncementList.replaceChildren();
+                }
 
-if (admissionDocumentLinks) {
-    admissionDocumentLinks.replaceChildren();
-}
+                if (announcementMessage) {
+                    announcementMessage.textContent =
+                        "Please sign in to manage announcements.";
+                }
 
-if (applicationsCount) {
-    applicationsCount.textContent = "0";
-}
+                if (admissionsTableBody) {
+                    admissionsTableBody.replaceChildren();
+                }
 
-if (documentsCount) {
-    documentsCount.textContent = "0";
-}
+                if (admissionDetailsPanel) {
+                    admissionDetailsPanel.hidden = true;
+                }
 
-if (reviewedCount) {
-    reviewedCount.textContent = "0";
-}
+                if (admissionDetailsContent) {
+                    admissionDetailsContent.replaceChildren();
+                }
+
+                if (admissionDocumentLinks) {
+                    admissionDocumentLinks.replaceChildren();
+                }
+
+                if (applicationsCount) {
+                    applicationsCount.textContent = "0";
+                }
+
+                if (documentsCount) {
+                    documentsCount.textContent = "0";
+                }
+
+                if (reviewedCount) {
+                    reviewedCount.textContent = "0";
                 }
 
             }
@@ -1156,5 +1168,6 @@ if (reviewedCount) {
 
 }
 
-
 })();
+
+
