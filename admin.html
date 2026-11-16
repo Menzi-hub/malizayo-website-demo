@@ -314,192 +314,16 @@
 
                         </thead>
 
-                        <tbody>
+                       
+<tbody id="admissionsTableBody">
 
-                            <tr data-application="MPS-DEMO-001">
+    <tr>
+        <td colspan="6">
+            Loading submitted applications...
+        </td>
+    </tr>
 
-                                <td>MPS-DEMO-001</td>
-
-                                <td>Sample Learner A</td>
-
-                                <td>Grade 5</td>
-
-                                <td>Complete</td>
-
-                                <td>
-                                    <span class="status-pill status-pending"
-                                          data-application-status>
-                                        Pending Review
-                                    </span>
-                                </td>
-
-                                <td class="admin-actions">
-
-                                    <button
-                                        type="button"
-                                        class="view-application-btn">
-                                        View
-                                    </button>
-
-                                    <select class="status-choice"
-                                            aria-label="Status for application 001">
-
-                                        <option>Pending Review</option>
-                                        <option>Under Review</option>
-                                        <option>Approved</option>
-                                        <option>Awaiting Documents</option>
-
-                                    </select>
-
-                                    <button
-                                        type="button"
-                                        class="update-status-btn">
-                                        Update
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-
-                            <tr data-application="MPS-DEMO-002">
-
-                                <td>MPS-DEMO-002</td>
-
-                                <td>Sample Learner B</td>
-
-                                <td>Grade 4</td>
-
-                                <td>Documents Needed</td>
-
-                                <td>
-                                    <span class="status-pill status-review"
-                                          data-application-status>
-                                        Under Review
-                                    </span>
-                                </td>
-
-                                <td class="admin-actions">
-
-                                    <button
-                                        type="button"
-                                        class="view-application-btn">
-                                        View
-                                    </button>
-
-                                    <select class="status-choice"
-                                            aria-label="Status for application 002">
-
-                                        <option>Pending Review</option>
-                                        <option selected>Under Review</option>
-                                        <option>Approved</option>
-                                        <option>Awaiting Documents</option>
-
-                                    </select>
-
-                                    <button
-                                        type="button"
-                                        class="update-status-btn">
-                                        Update
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-
-                            <tr data-application="MPS-DEMO-003">
-
-                                <td>MPS-DEMO-003</td>
-
-                                <td>Sample Learner C</td>
-
-                                <td>Grade 2</td>
-
-                                <td>Complete</td>
-
-                                <td>
-                                    <span class="status-pill status-approved"
-                                          data-application-status>
-                                        Approved
-                                    </span>
-                                </td>
-
-                                <td class="admin-actions">
-
-                                    <button
-                                        type="button"
-                                        class="view-application-btn">
-                                        View
-                                    </button>
-
-                                    <select class="status-choice"
-                                            aria-label="Status for application 003">
-
-                                        <option>Pending Review</option>
-                                        <option>Under Review</option>
-                                        <option selected>Approved</option>
-                                        <option>Awaiting Documents</option>
-
-                                    </select>
-
-                                    <button
-                                        type="button"
-                                        class="update-status-btn">
-                                        Update
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-
-                            <tr data-application="MPS-DEMO-004">
-
-                                <td>MPS-DEMO-004</td>
-
-                                <td>Sample Learner D</td>
-
-                                <td>Grade 7</td>
-
-                                <td>Documents Needed</td>
-
-                                <td>
-                                    <span class="status-pill status-documents"
-                                          data-application-status>
-                                        Awaiting Documents
-                                    </span>
-                                </td>
-
-                                <td class="admin-actions">
-
-                                    <button
-                                        type="button"
-                                        class="view-application-btn">
-                                        View
-                                    </button>
-
-                                    <select class="status-choice"
-                                            aria-label="Status for application 004">
-
-                                        <option>Pending Review</option>
-                                        <option>Under Review</option>
-                                        <option>Approved</option>
-                                        <option selected>Awaiting Documents</option>
-
-                                    </select>
-
-                                    <button
-                                        type="button"
-                                        class="update-status-btn">
-                                        Update
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-                        </tbody>
+</tbody>
 
                     </table>
 
@@ -509,6 +333,38 @@
                    class="admin-notice"
                    role="status"
                    aria-live="polite"></p>
+                
+<!-- LIVE ADMISSION APPLICATION DETAILS -->
+
+<div
+    class="admin-panel"
+    id="admissionDetailsPanel"
+    hidden
+>
+
+    <div class="panel-heading">
+
+        <h3 id="admissionDetailsTitle">
+            Application Details
+        </h3>
+
+        <button
+            type="button"
+            id="closeAdmissionDetails"
+        >
+            Close
+        </button>
+
+    </div>
+
+    <div id="admissionDetailsContent"></div>
+
+    <h3>Supporting Documents</h3>
+
+    <div id="admissionDocumentLinks"></div>
+
+</div>
+
 
             </section>
 
