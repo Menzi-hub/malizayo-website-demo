@@ -7,179 +7,56 @@
 
 (function () {
 
-    // Find all sample applications
+   
+/* =====================================
+   LIVE ADMISSIONS ELEMENTS
+===================================== */
 
-    const applicationRows =
-        document.querySelectorAll(
-            ".admin-table tbody tr"
-        );
+const admissionsTableBody =
+    document.getElementById("admissionsTableBody");
 
+const applicationsCount =
+    document.getElementById("applicationsCount");
 
-    const applicationsCount =
-        document.getElementById("applicationsCount");
+const documentsCount =
+    document.getElementById("documentsCount");
 
-    const documentsCount =
-        document.getElementById("documentsCount");
+const reviewedCount =
+    document.getElementById("reviewedCount");
 
-    const reviewedCount =
-        document.getElementById("reviewedCount");
+const adminNotice =
+    document.getElementById("adminNotice");
 
-    const adminNotice =
-        document.getElementById("adminNotice");
+const admissionDetailsPanel =
+    document.getElementById("admissionDetailsPanel");
 
+const admissionDetailsTitle =
+    document.getElementById("admissionDetailsTitle");
 
-    // Update the summary cards
+const admissionDetailsContent =
+    document.getElementById("admissionDetailsContent");
 
-    function updateDashboardCounts() {
+const admissionDocumentLinks =
+    document.getElementById("admissionDocumentLinks");
 
-        let pendingDocuments = 0;
-
-        let reviewedApplications = 0;
-
-        applicationRows.forEach(function (row) {
-
-            const documentStatus =
-                row.cells[3].textContent.trim();
-
-            const applicationStatus =
-                row.querySelector(
-                    "[data-application-status]"
-                ).textContent.trim();
+const closeAdmissionDetails =
+    document.getElementById("closeAdmissionDetails");
 
 
-            if (documentStatus === "Documents Needed") {
-                pendingDocuments++;
-            }
+// CLOSE APPLICATION DETAILS
 
-            if (applicationStatus === "Approved") {
-                reviewedApplications++;
-            }
+if (closeAdmissionDetails) {
 
-        });
+    closeAdmissionDetails.addEventListener(
+        "click",
+        function () {
 
+            admissionDetailsPanel.hidden = true;
 
-        if (applicationsCount) {
-            applicationsCount.textContent =
-                applicationRows.length;
         }
+    );
 
-        if (documentsCount) {
-            documentsCount.textContent =
-                pendingDocuments;
-        }
-
-        if (reviewedCount) {
-            reviewedCount.textContent =
-                reviewedApplications;
-        }
-
-    }
-
-
-    // VIEW APPLICATION BUTTON
-
-    document.querySelectorAll(
-        ".view-application-btn"
-    ).forEach(function (button) {
-
-        button.addEventListener("click", function () {
-
-            const row = button.closest("tr");
-
-            const reference =
-                row.dataset.application;
-
-            const learner =
-                row.cells[1].textContent;
-
-            const grade =
-                row.cells[2].textContent;
-
-            const documents =
-                row.cells[3].textContent;
-
-            const status =
-                row.querySelector(
-                    "[data-application-status]"
-                ).textContent.trim();
-
-
-            alert(
-                "SAMPLE APPLICATION DETAILS\n\n" +
-                "Reference: " + reference + "\n" +
-                "Learner: " + learner + "\n" +
-                "Grade: " + grade + "\n" +
-                "Documents: " + documents + "\n" +
-                "Status: " + status + "\n\n" +
-                "This is a fictional demonstration record."
-            );
-
-        });
-
-    });
-
-
-    // UPDATE APPLICATION STATUS
-
-    document.querySelectorAll(
-        ".update-status-btn"
-    ).forEach(function (button) {
-
-        button.addEventListener("click", function () {
-
-            const row = button.closest("tr");
-
-            const reference =
-                row.dataset.application;
-
-            const select =
-                row.querySelector(".status-choice");
-
-            const newStatus = select.value;
-
-            const statusLabel =
-                row.querySelector(
-                    "[data-application-status]"
-                );
-
-
-            // Assign the correct status style
-
-            const statusStyles = {
-
-                "Pending Review": "status-pending",
-
-                "Under Review": "status-review",
-
-                "Approved": "status-approved",
-
-                "Awaiting Documents": "status-documents"
-
-            };
-
-
-            statusLabel.textContent = newStatus;
-
-            statusLabel.className =
-                "status-pill " +
-                statusStyles[newStatus];
-
-
-            // Refresh dashboard figures
-
-            updateDashboardCounts();
-
-
-            // Show a confirmation
-
-            adminNotice.textContent =
-                reference + " status changed to " +
-                newStatus +
-                ". Demonstration only; changes are not saved.";
-
-        });
-
-    });
+}
 
 
     // REPORT FILE CHECK
@@ -263,9 +140,7 @@
     }
 
 
-  // Display initial summary figures
-
-updateDashboardCounts();
+ 
 
 
 
@@ -681,6 +556,542 @@ if (announcementForm) {
 
 
 
+/* =====================================
+   LIVE ADMISSIONS MANAGEMENT
+   MALIZAYO PRIMARY SCHOOL
+===================================== */
+
+const admissionsBucket = "admissions-documents";
+
+const admissionDocuments = [
+    {
+        label: "Birth Certificate",
+        field: "birth_certificate_path"
+    },
+    {
+        label: "Parent ID",
+        field: "parent_id_path"
+    },
+    {
+        label: "Proof of Residence",
+        field: "proof_residence_path"
+    },
+    {
+        label: "Previous School Report",
+        field: "previous_report_path"
+    },
+    {
+        label: "Signature",
+        field: "signature_path"
+    }
+];
+
+const admissionStatusClasses = {
+    "Pending Review": "status-pending",
+    "Under Review": "status-review",
+    "Approved": "status-approved",
+    "Awaiting Documents": "status-documents"
+};
+
+
+// CREATE A TABLE CELL SAFELY
+
+function addAdmissionCell(row, value) {
+
+    const cell = document.createElement("td");
+
+    cell.textContent =
+        value === null || value === undefined || value === ""
+            ? "Not provided"
+            : String(value);
+
+    row.appendChild(cell);
+
+    return cell;
+
+}
+
+
+// LOAD APPLICATIONS FROM SUPABASE
+
+async function loadAdminApplications() {
+
+    if (!admissionsTableBody || !sharedSupabase) {
+        return;
+    }
+
+    admissionsTableBody.replaceChildren();
+
+    const loadingRow = document.createElement("tr");
+    const loadingCell = document.createElement("td");
+
+    loadingCell.colSpan = 6;
+    loadingCell.textContent =
+        "Loading applications...";
+
+    loadingRow.appendChild(loadingCell);
+    admissionsTableBody.appendChild(loadingRow);
+
+    try {
+
+        const { data, error } =
+            await sharedSupabase
+                .from("admissions")
+                .select(
+                    "id, learner_name, date_of_birth, grade_applying_for, previous_school, parent_guardian_name, relationship_to_learner, parent_phone, parent_email, residential_address, signature_name, declaration_accepted, birth_certificate_path, parent_id_path, proof_residence_path, previous_report_path, signature_path, status, submitted_at"
+                )
+                .order("submitted_at", {
+                    ascending: false
+                });
+
+        if (error) {
+            throw error;
+        }
+
+        const applications = data || [];
+
+        admissionsTableBody.replaceChildren();
+
+        // UPDATE DASHBOARD COUNTS
+
+        if (applicationsCount) {
+            applicationsCount.textContent =
+                applications.length;
+        }
+
+        if (documentsCount) {
+
+            documentsCount.textContent =
+                applications.filter(function (application) {
+
+                    return admissionDocuments
+                        .filter(function (documentInfo) {
+                            return documentInfo.field !== "signature_path";
+                        })
+                        .some(function (documentInfo) {
+                            return !application[documentInfo.field];
+                        });
+
+                }).length;
+
+        }
+
+        if (reviewedCount) {
+
+            reviewedCount.textContent =
+                applications.filter(function (application) {
+                    return application.status === "Approved";
+                }).length;
+
+        }
+
+
+        // SHOW EMPTY STATE
+
+        if (applications.length === 0) {
+
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+
+            cell.colSpan = 6;
+
+            cell.textContent =
+                "No admission applications have been submitted yet.";
+
+            row.appendChild(cell);
+            admissionsTableBody.appendChild(row);
+
+            return;
+
+        }
+
+
+        // DISPLAY APPLICATION ROWS
+
+        applications.forEach(function (application) {
+
+            const row = document.createElement("tr");
+
+            const reference =
+                "MPS-" +
+                application.id.slice(0, 8).toUpperCase();
+
+            addAdmissionCell(row, reference);
+
+            addAdmissionCell(
+                row,
+                application.learner_name
+            );
+
+            addAdmissionCell(
+                row,
+                application.grade_applying_for
+            );
+
+
+            // DOCUMENT COUNT
+
+            const uploadedDocuments =
+                admissionDocuments
+                    .filter(function (documentInfo) {
+                        return documentInfo.field !== "signature_path";
+                    })
+                    .filter(function (documentInfo) {
+                        return Boolean(application[documentInfo.field]);
+                    }).length;
+
+            addAdmissionCell(
+                row,
+                uploadedDocuments + "/4 uploaded"
+            );
+
+
+            // APPLICATION STATUS
+
+            const statusCell =
+                document.createElement("td");
+
+            const statusBadge =
+                document.createElement("span");
+
+            statusBadge.className =
+                "status-pill " +
+                (
+                    admissionStatusClasses[application.status] ||
+                    "status-pending"
+                );
+
+            statusBadge.textContent =
+                application.status;
+
+            statusCell.appendChild(statusBadge);
+            row.appendChild(statusCell);
+
+
+            // ACTIONS
+
+            const actionsCell =
+                document.createElement("td");
+
+            actionsCell.className = "admin-actions";
+
+
+            const viewButton =
+                document.createElement("button");
+
+            viewButton.type = "button";
+            viewButton.textContent = "View";
+
+            viewButton.addEventListener(
+                "click",
+                function () {
+                    viewAdminApplication(application);
+                }
+            );
+
+
+            const statusSelect =
+                document.createElement("select");
+
+            statusSelect.className = "status-choice";
+            statusSelect.setAttribute(
+                "aria-label",
+                "Application status"
+            );
+
+            [
+                "Pending Review",
+                "Under Review",
+                "Approved",
+                "Awaiting Documents"
+            ].forEach(function (status) {
+
+                const option =
+                    document.createElement("option");
+
+                option.value = status;
+                option.textContent = status;
+
+                if (status === application.status) {
+                    option.selected = true;
+                }
+
+                statusSelect.appendChild(option);
+
+            });
+
+
+            const updateButton =
+                document.createElement("button");
+
+            updateButton.type = "button";
+            updateButton.textContent = "Update";
+
+            updateButton.addEventListener(
+                "click",
+                async function () {
+
+                    await updateAdminApplicationStatus(
+                        application.id,
+                        statusSelect.value,
+                        updateButton
+                    );
+
+                }
+            );
+
+
+            actionsCell.appendChild(viewButton);
+            actionsCell.appendChild(statusSelect);
+            actionsCell.appendChild(updateButton);
+
+            row.appendChild(actionsCell);
+
+            admissionsTableBody.appendChild(row);
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Admissions loading failed:",
+            error
+        );
+
+        admissionsTableBody.replaceChildren();
+
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+
+        cell.colSpan = 6;
+
+        cell.textContent =
+            "Unable to load applications. Please check administrator access.";
+
+        row.appendChild(cell);
+        admissionsTableBody.appendChild(row);
+
+        if (adminNotice) {
+            adminNotice.textContent = error.message;
+        }
+
+    }
+
+}
+
+
+// VIEW APPLICATION DETAILS AND PRIVATE DOCUMENTS
+
+async function viewAdminApplication(application) {
+
+    if (!admissionDetailsPanel) {
+        return;
+    }
+
+    admissionDetailsPanel.hidden = false;
+
+    admissionDetailsTitle.textContent =
+        "Application MPS-" +
+        application.id.slice(0, 8).toUpperCase();
+
+    admissionDetailsContent.replaceChildren();
+
+    admissionDocumentLinks.replaceChildren();
+
+
+    const details = [
+        ["Learner", application.learner_name],
+        ["Date of Birth", application.date_of_birth],
+        ["Grade", application.grade_applying_for],
+        ["Previous School", application.previous_school],
+        ["Parent / Guardian", application.parent_guardian_name],
+        ["Relationship", application.relationship_to_learner],
+        ["Contact Number", application.parent_phone],
+        ["Email Address", application.parent_email],
+        ["Residential Address", application.residential_address],
+        ["Signature Name", application.signature_name],
+        ["Application Status", application.status],
+        [
+            "Date Submitted",
+            new Date(application.submitted_at).toLocaleString("en-ZA")
+        ]
+    ];
+
+
+    details.forEach(function (detail) {
+
+        const paragraph = document.createElement("p");
+
+        const label = document.createElement("strong");
+
+        label.textContent = detail[0] + ": ";
+
+        const value = document.createTextNode(
+            detail[1] || "Not provided"
+        );
+
+        paragraph.appendChild(label);
+        paragraph.appendChild(value);
+
+        admissionDetailsContent.appendChild(paragraph);
+
+    });
+
+
+    // GENERATE SHORT-LIVED PRIVATE DOCUMENT LINKS
+
+    for (const documentInfo of admissionDocuments) {
+
+        const paragraph = document.createElement("p");
+
+        const label = document.createElement("strong");
+
+        label.textContent = documentInfo.label + ": ";
+
+        paragraph.appendChild(label);
+
+        const path =
+            application[documentInfo.field];
+
+        if (!path) {
+
+            paragraph.appendChild(
+                document.createTextNode("Not uploaded")
+            );
+
+        } else {
+
+            try {
+
+                const { data, error } =
+                    await sharedSupabase.storage
+                        .from(admissionsBucket)
+                        .createSignedUrl(path, 300);
+
+                if (error) {
+                    throw error;
+                }
+
+                const link =
+                    document.createElement("a");
+
+                link.href = data.signedUrl;
+
+                link.target = "_blank";
+
+                link.rel = "noopener noreferrer";
+
+                link.textContent =
+                    "View " + documentInfo.label;
+
+                paragraph.appendChild(link);
+
+            } catch (error) {
+
+                console.error(
+                    "Private document access failed:",
+                    error
+                );
+
+                paragraph.appendChild(
+                    document.createTextNode(
+                        "Unable to open document"
+                    )
+                );
+
+            }
+
+        }
+
+        admissionDocumentLinks.appendChild(paragraph);
+
+    }
+
+    admissionDetailsPanel.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+}
+
+
+// UPDATE APPLICATION STATUS
+
+async function updateAdminApplicationStatus(
+    applicationId,
+    newStatus,
+    button
+) {
+
+    button.disabled = true;
+    button.textContent = "Updating...";
+
+    try {
+
+        const { data: userData, error: userError } =
+            await sharedSupabase.auth.getUser();
+
+        if (userError || !userData.user) {
+            throw new Error(
+                "Please sign in again as administrator."
+            );
+        }
+
+        const { data, error } =
+            await sharedSupabase
+                .from("admissions")
+                .update({
+                    status: newStatus,
+                    updated_at: new Date().toISOString(),
+                    reviewed_by:
+                        newStatus === "Pending Review"
+                            ? null
+                            : userData.user.id,
+                    reviewed_at:
+                        newStatus === "Pending Review"
+                            ? null
+                            : new Date().toISOString()
+                })
+                .eq("id", applicationId)
+                .select("id");
+
+        if (error) {
+            throw error;
+        }
+
+        if (!data || data.length === 0) {
+            throw new Error(
+                "The application status was not updated."
+            );
+        }
+
+        if (adminNotice) {
+            adminNotice.textContent =
+                "Application status updated successfully.";
+        }
+
+        await loadAdminApplications();
+
+    } catch (error) {
+
+        console.error(
+            "Application status update failed:",
+            error
+        );
+
+        if (adminNotice) {
+            adminNotice.textContent = error.message;
+        }
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = "Update";
+
+    }
+
+}
+
 
 // LOAD ANNOUNCEMENTS WHEN ADMIN SESSION IS AVAILABLE
 
@@ -691,29 +1102,51 @@ if (sharedSupabase) {
 
             // Load on first page visit and after sign-in
             if (
-                (
-                    event === "INITIAL_SESSION" ||
-                    event === "SIGNED_IN"
-                ) && session
-            ) {
+    (
+        event === "INITIAL_SESSION" ||
+        event === "SIGNED_IN"
+    ) && session
+) {
 
-                window.setTimeout(
-                    loadAdminAnnouncements,
-                    0
-                );
+    window.setTimeout(function () {
 
-            }
+        loadAdminAnnouncements();
+        loadAdminApplications();
+
+    }, 0);
+
+}
 
             // Clear the list after sign-out
-            if (event === "SIGNED_OUT") {
+          // Clear sensitive admission information on sign-out
 
-                if (adminAnnouncementList) {
-                    adminAnnouncementList.replaceChildren();
-                }
+if (admissionsTableBody) {
+    admissionsTableBody.replaceChildren();
+}
 
-                if (announcementMessage) {
-                    announcementMessage.textContent =
-                        "Please sign in to manage announcements.";
+if (admissionDetailsPanel) {
+    admissionDetailsPanel.hidden = true;
+}
+
+if (admissionDetailsContent) {
+    admissionDetailsContent.replaceChildren();
+}
+
+if (admissionDocumentLinks) {
+    admissionDocumentLinks.replaceChildren();
+}
+
+if (applicationsCount) {
+    applicationsCount.textContent = "0";
+}
+
+if (documentsCount) {
+    documentsCount.textContent = "0";
+}
+
+if (reviewedCount) {
+    reviewedCount.textContent = "0";
+}
                 }
 
             }
