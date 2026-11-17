@@ -28,6 +28,8 @@
 
     const loginButton =
         document.getElementById("adminLoginButton");
+   const logoutButton =
+    document.getElementById("adminLogoutButton");
 
     const loginMessage =
         document.getElementById("adminLoginMessage");
@@ -156,6 +158,48 @@
 
     }
 
+
+    // ADMINISTRATOR LOGOUT
+
+    if (logoutButton) {
+
+        logoutButton.addEventListener(
+            "click",
+            async function () {
+
+                logoutButton.disabled = true;
+                logoutButton.textContent = "Signing out...";
+
+                try {
+
+                    const { error } =
+                        await supabase.auth.signOut();
+
+                    if (error) {
+                        throw error;
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "Administrator logout failed:",
+                        error
+                    );
+
+                    loginMessage.textContent =
+                        "Unable to sign out. Please try again.";
+
+                } finally {
+
+                    logoutButton.disabled = false;
+                    logoutButton.textContent = "Log Out";
+
+                }
+
+            }
+        );
+
+    }
 
     // Keep dashboard hidden until authentication
 
