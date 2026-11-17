@@ -43,6 +43,20 @@ const closeAdmissionDetails =
     document.getElementById("closeAdmissionDetails");
 
 
+// ADMISSIONS SEARCH AND FILTER ELEMENTS
+
+const admissionsSearch =
+    document.getElementById("admissionsSearch");
+
+const admissionsGradeFilter =
+    document.getElementById("admissionsGradeFilter");
+
+const admissionsStatusFilter =
+    document.getElementById("admissionsStatusFilter");
+
+const clearAdmissionsFilters =
+    document.getElementById("clearAdmissionsFilters");
+
 // CLOSE APPLICATION DETAILS
 
 if (closeAdmissionDetails) {
@@ -612,6 +626,172 @@ function addAdmissionCell(row, value) {
 }
 
 
+// APPLY ADMISSIONS SEARCH AND FILTERS
+
+function applyAdmissionsFilters() {
+
+    if (!admissionsTableBody) return;
+
+    const searchTerm = admissionsSearch
+        ? admissionsSearch.value.trim().toLowerCase()
+        : "";
+
+    const selectedGrade = admissionsGradeFilter
+        ? admissionsGradeFilter.value.trim().toLowerCase()
+        : "";
+
+    const selectedStatus = admissionsStatusFilter
+        ? admissionsStatusFilter.value.trim().toLowerCase()
+        : "";
+
+    const rows =
+        Array.from(admissionsTableBody.querySelectorAll("tr"));
+
+    let applicationRows = 0;
+    let visibleRows = 0;
+
+    rows.forEach(function (row) {
+
+        // Ignore loading, error and empty-state rows.
+
+        if (!row.cells || row.cells.length < 6) {
+            return;
+        }
+
+        applicationRows++;
+
+        const reference =
+            row.cells[0].textContent.trim().toLowerCase();
+
+        const learner =
+            row.cells[1].textContent.trim().toLowerCase();
+
+        const grade =
+            row.cells[2].textContent
+                .trim()
+                .replace(/^grade\s*/i, "")
+                .toLowerCase();
+
+        const status =
+            row.cells[4].textContent.trim().toLowerCase();
+
+        const matchesSearch =
+            !searchTerm ||
+            reference.includes(searchTerm) ||
+            learner.includes(searchTerm);
+
+        const matchesGrade =
+            !selectedGrade ||
+            grade === selectedGrade;
+
+        const matchesStatus =
+            !selectedStatus ||
+            status === selectedStatus;
+
+        const isVisible =
+            matchesSearch &&
+            matchesGrade &&
+            matchesStatus;
+
+        row.hidden = !isVisible;
+
+        if (isVisible) {
+            visibleRows++;
+        }
+
+    });
+
+
+    // REMOVE PREVIOUS NO-RESULTS MESSAGE
+
+    const previousMessage =
+        document.getElementById("admissionsFilterNoResults");
+
+    if (previousMessage) {
+        previousMessage.remove();
+    }
+
+
+    // SHOW MESSAGE WHEN NO APPLICATIONS MATCH
+
+    if (applicationRows > 0 && visibleRows === 0) {
+
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+
+        row.id = "admissionsFilterNoResults";
+
+        cell.colSpan = 6;
+
+        cell.textContent =
+            "No applications match your search or filters.";
+
+        row.appendChild(cell);
+
+        admissionsTableBody.appendChild(row);
+
+    }
+
+}
+
+
+// CONNECT FILTER CONTROLS
+
+if (admissionsSearch) {
+
+    admissionsSearch.addEventListener(
+        "input",
+        applyAdmissionsFilters
+    );
+
+}
+
+if (admissionsGradeFilter) {
+
+    admissionsGradeFilter.addEventListener(
+        "change",
+        applyAdmissionsFilters
+    );
+
+}
+
+if (admissionsStatusFilter) {
+
+    admissionsStatusFilter.addEventListener(
+        "change",
+        applyAdmissionsFilters
+    );
+
+}
+
+
+// CLEAR ALL FILTERS
+
+if (clearAdmissionsFilters) {
+
+    clearAdmissionsFilters.addEventListener(
+        "click",
+        function () {
+
+            if (admissionsSearch) {
+                admissionsSearch.value = "";
+            }
+
+            if (admissionsGradeFilter) {
+                admissionsGradeFilter.value = "";
+            }
+
+            if (admissionsStatusFilter) {
+                admissionsStatusFilter.value = "";
+            }
+
+            applyAdmissionsFilters();
+
+        }
+    );
+
+}
+
 // LOAD APPLICATIONS FROM SUPABASE
 
 async function loadAdminApplications() {
@@ -847,9 +1027,13 @@ async function loadAdminApplications() {
 
             row.appendChild(actionsCell);
 
-            admissionsTableBody.appendChild(row);
+                    admissionsTableBody.appendChild(row);
 
         });
+
+        // APPLY SEARCH AND FILTERS AFTER LOADING
+
+        applyAdmissionsFilters();
 
     } catch (error) {
 
