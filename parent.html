@@ -16,9 +16,158 @@
 
 </head>
 
+
 <body class="parent-page">
 
-    <div class="parent-layout">
+    <!-- PARENT LOGIN SCREEN -->
+
+    <section id="parentLoginPanel" class="parent-login-panel">
+
+        <div class="parent-login-card">
+
+            <img
+                src="IMAGES/school-badge.png"
+                alt="Malizayo Primary School Badge"
+            >
+
+            <p class="parent-small-heading">
+                MALIZAYO PRIMARY SCHOOL
+            </p>
+
+            <h1>Parent Portal Login</h1>
+
+            <p>
+                Sign in to view your child's school information.
+            </p>
+
+            <form id="parentLoginForm">
+
+                <label for="parentEmail">
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="parentEmail"
+                    placeholder="Enter your registered email"
+                    autocomplete="username"
+                    required
+                >
+
+                <label for="parentPassword">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="parentPassword"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    required
+                >
+
+                <button type="submit" id="parentLoginButton">
+                    Sign In
+                </button>
+
+            </form>
+
+            <button
+                type="button"
+                id="parentForgotPasswordButton">
+                Forgot Password?
+            </button>
+
+            <p
+                id="parentLoginMessage"
+                role="status"
+                aria-live="polite">
+            </p>
+
+            <small>
+                Authorised parents and guardians only.
+            </small>
+
+        </div>
+
+    </section>
+
+
+    <!-- FIRST-TIME PARENT PASSWORD SETUP -->
+
+    <section
+        id="parentPasswordSetupPanel"
+        class="parent-login-panel"
+        hidden
+    >
+
+        <div class="parent-login-card">
+
+            <img
+                src="IMAGES/school-badge.png"
+                alt="Malizayo Primary School Badge"
+            >
+
+            <p class="parent-small-heading">
+                MALIZAYO PRIMARY SCHOOL
+            </p>
+
+            <h1>Create Your Password</h1>
+
+            <p>
+                Welcome to the Parent Portal.
+                Create a secure password to access your child's information.
+            </p>
+
+            <form id="parentPasswordSetupForm">
+
+                <label for="parentNewPassword">
+                    New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="parentNewPassword"
+                    minlength="12"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <label for="parentConfirmPassword">
+                    Confirm Password
+                </label>
+
+                <input
+                    type="password"
+                    id="parentConfirmPassword"
+                    minlength="12"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <button
+                    type="submit"
+                    id="parentPasswordSetupButton">
+                    Save Password
+                </button>
+
+            </form>
+
+            <p
+                id="parentPasswordSetupMessage"
+                role="status"
+                aria-live="polite">
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- AUTHENTICATED PARENT DASHBOARD -->
+
+    <div class="parent-layout" id="parentDashboard" hidden>
+
 
         <!-- SIDEBAR -->
 
