@@ -181,6 +181,205 @@ const announcementMessage =
 const adminAnnouncementList =
     document.getElementById("adminAnnouncementList");
 
+/* =====================================
+   PARENT ACCOUNT REGISTRATION
+   CONNECT TO INVITE-PARENT FUNCTION
+===================================== */
+
+const parentInvitationForm =
+    document.getElementById("parentInvitationForm");
+
+const parentFullName =
+    document.getElementById("parentFullName");
+
+const parentEmailAddress =
+    document.getElementById("parentEmailAddress");
+
+const parentPhoneNumber =
+    document.getElementById("parentPhoneNumber");
+
+const sendParentInvitationButton =
+    document.getElementById("sendParentInvitationButton");
+
+const parentInvitationMessage =
+    document.getElementById("parentInvitationMessage");
+
+
+if (
+    parentInvitationForm &&
+    sharedSupabase
+) {
+
+    parentInvitationForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+            const fullName =
+                parentFullName.value.trim();
+
+            const email =
+                parentEmailAddress.value.trim().toLowerCase();
+
+            const phone =
+                parentPhoneNumber.value.trim();
+
+
+            if (!fullName || !email) {
+
+                parentInvitationMessage.textContent =
+                    "Please enter the parent's name and email address.";
+
+                return;
+
+            }
+
+
+            sendParentInvitationButton.disabled = true;
+
+            sendParentInvitationButton.textContent =
+                "Sending Invitation...";
+
+            parentInvitationMessage.textContent =
+                "Verifying administrator access...";
+
+
+            try {
+
+                // CHECK SIGNED-IN ADMINISTRATOR
+
+                const { data: userData, error: userError } =
+                    await sharedSupabase.auth.getUser();
+
+                if (
+                    userError ||
+                    !userData.user ||
+                    userData.user.id !==
+                        "a955d9d9-e91f-4fd9-b1e7-d015af08ae04"
+                ) {
+
+                    throw new Error(
+                        "Only the authorised school administrator can register parents."
+                    );
+
+                }
+
+
+                // CALL SECURE EDGE FUNCTION
+
+                parentInvitationMessage.textContent =
+                    "Sending parent invitation...";
+
+                const { data, error } =
+                    await sharedSupabase.functions.invoke(
+                        "invite-parent",
+                        {
+                            body: {
+                                full_name: fullName,
+                                email: email,
+                                phone: phone
+                            }
+                        }
+                    );
+
+
+                // HANDLE SERVER ERRORS
+
+                if (error) {
+
+                    let responseBody = null;
+
+                    if (
+                        error.context &&
+                        typeof error.context.json === "function"
+                    ) {
+
+                        try {
+
+                            responseBody =
+                                await error.context.json();
+
+                        } catch {
+                            responseBody = null;
+                        }
+
+                    }
+
+
+                    // Invitation may exist even if profile
+                    // creation failed. Never resend automatically.
+
+                    if (
+                        responseBody &&
+                        responseBody.invitationCreated === true
+                    ) {
+
+                        throw new Error(
+                            "The invitation was created, but the parent profile could not be saved. Do not resend the invitation. Please contact the administrator for assistance."
+                        );
+
+                    }
+
+                    throw new Error(
+                        responseBody?.message ||
+                        error.message ||
+                        "Unable to send the parent invitation."
+                    );
+
+                }
+
+
+                if (!data || data.success !== true) {
+
+                    throw new Error(
+                        data?.message ||
+                        "The parent invitation could not be completed."
+                    );
+
+                }
+
+
+                // SUCCESS
+
+                parentInvitationForm.reset();
+
+                parentInvitationMessage.style.color =
+                    "#216638";
+
+                parentInvitationMessage.textContent =
+                    "Invitation sent successfully to " +
+                    data.parent.email +
+                    ". The parent can now check their email and create a password.";
+
+            } catch (error) {
+
+                console.error(
+                    "Parent registration failed:",
+                    error
+                );
+
+                parentInvitationMessage.style.color =
+                    "#922E26";
+
+                parentInvitationMessage.textContent =
+                    error.message ||
+                    "Parent registration failed. Please try again.";
+
+            } finally {
+
+                sendParentInvitationButton.disabled = false;
+
+                sendParentInvitationButton.textContent =
+                    "Send Parent Invitation";
+
+            }
+
+        }
+    );
+
+}
+
 const sharedSupabase = window.malizayoSupabase;
 
 let editingAnnouncementId = null;
