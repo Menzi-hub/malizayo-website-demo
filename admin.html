@@ -435,6 +435,80 @@
 
             </section>
 
+<!-- PARENT ACCOUNT REGISTRATION -->
+
+<section class="admin-panel" id="parent-management">
+
+    <div class="panel-heading">
+        <h2>Parent Account Registration</h2>
+        <span>Administrator Only</span>
+    </div>
+
+    <p class="document-note">
+        Register parents and guardians to give them secure
+        access to their children's school information.
+    </p>
+
+    <form id="parentInvitationForm"
+          class="parent-management-form">
+
+        <label for="parentFullName">
+            Parent / Guardian Full Name
+        </label>
+
+        <input
+            type="text"
+            id="parentFullName"
+            maxlength="150"
+            placeholder="Enter parent's full name"
+            required
+        >
+
+        <label for="parentEmailAddress">
+            Email Address
+        </label>
+
+        <input
+            type="email"
+            id="parentEmailAddress"
+            maxlength="254"
+            placeholder="Enter parent's email address"
+            required
+        >
+
+        <label for="parentPhoneNumber">
+            Contact Number
+        </label>
+
+        <input
+            type="tel"
+            id="parentPhoneNumber"
+            maxlength="40"
+            placeholder="Enter contact number"
+        >
+
+        <button
+            type="submit"
+            id="sendParentInvitationButton">
+            Send Parent Invitation
+        </button>
+
+    </form>
+
+    <p
+        id="parentInvitationMessage"
+        role="status"
+        aria-live="polite">
+    </p>
+
+    <p class="document-note">
+        An invitation email will be sent to the registered
+        parent's email address. The parent must create a password
+        before accessing the Parent Portal.
+    </p>
+
+</section>
+
 
             <!-- LEARNER RECORDS -->
 
