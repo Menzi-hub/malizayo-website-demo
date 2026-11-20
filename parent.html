@@ -694,8 +694,47 @@
     </div>
 
 
-    <script src="JS/parent.js"></script>
-    <script src="JS/results-demo.js"></script>
+   
+<!-- CAPTURE INVITATION LINK BEFORE SUPABASE INITIALIZES -->
+
+<script>
+(function () {
+
+    const hashParameters = new URLSearchParams(
+        window.location.hash.replace(/^#/, "")
+    );
+
+    const queryParameters = new URLSearchParams(
+        window.location.search
+    );
+
+    window.__malizayoParentAuthType =
+        hashParameters.get("type") ||
+        queryParameters.get("type") ||
+        (queryParameters.has("code") ? "pkce" : "");
+
+})();
+</script>
+
+
+<!-- SUPABASE CONNECTION -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="JS/supabase-client.js"></script>
+
+
+<!-- PARENT AUTHENTICATION -->
+
+<script src="JS/parent-auth.js"></script>
+
+
+<!-- EXISTING DEMONSTRATION SCRIPTS -->
+
+<script src="JS/parent.js"></script>
+
+<script src="JS/results-demo.js"></script>
+
 
 </body>
 
