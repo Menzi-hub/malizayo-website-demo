@@ -2655,3 +2655,152 @@ footer {
 
 }
 
+/* ==================================
+   MALIZAYO PARENT PORTAL LOGIN
+================================== */
+
+.parent-login-panel {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 20px;
+    background-color: #F3F6FA;
+}
+
+.parent-login-panel[hidden] {
+    display: none !important;
+}
+
+.parent-login-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 35px;
+    background-color: white;
+    border: 1px solid #DCE4ED;
+    border-top: 5px solid #F4C95D;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(20, 45, 75, 0.08);
+}
+
+.parent-login-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
+
+.parent-login-card .parent-small-heading {
+    color: #8A6812;
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+
+.parent-login-card h1 {
+    color: #173B5C;
+    font-size: 26px;
+    margin: 12px 0;
+}
+
+.parent-login-card > p:not(.parent-small-heading) {
+    color: #536477;
+    font-size: 14px;
+    margin-bottom: 22px;
+}
+
+.parent-login-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+}
+
+.parent-login-card label {
+    color: #173B5C;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.parent-login-card input {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #CBD5E1;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+}
+
+.parent-login-card input:focus {
+    outline: none;
+    border-color: #173B5C;
+    box-shadow: 0 0 0 2px rgba(23, 59, 92, 0.12);
+}
+
+.parent-login-card button {
+    background-color: #173B5C;
+    color: white;
+    border: none;
+    padding: 13px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.parent-login-card button:hover {
+    background-color: #28577D;
+}
+
+.parent-login-card button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+#parentForgotPasswordButton {
+    background-color: white;
+    color: #173B5C;
+    border: 1px solid #173B5C;
+}
+
+#parentForgotPasswordButton:hover {
+    background-color: #EAF0F7;
+}
+
+#parentLoginMessage,
+#parentPasswordSetupMessage {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #922E26;
+    line-height: 1.6;
+}
+
+.parent-login-card > small {
+    display: block;
+    margin-top: 20px;
+    color: #718096;
+    font-size: 12px;
+}
+
+/* KEEP PARENT DASHBOARD HIDDEN UNTIL READY */
+
+#parentDashboard[hidden] {
+    display: none !important;
+}
+
+/* MOBILE PARENT LOGIN */
+
+@media (max-width: 480px) {
+
+    .parent-login-card {
+        padding: 25px 20px;
+    }
+
+    .parent-login-card h1 {
+        font-size: 23px;
+    }
+
+}
+
