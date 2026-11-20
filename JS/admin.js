@@ -181,6 +181,12 @@ const announcementMessage =
 const adminAnnouncementList =
     document.getElementById("adminAnnouncementList");
 
+
+
+
+
+const sharedSupabase = window.malizayoSupabase;
+   
 /* =====================================
    PARENT ACCOUNT REGISTRATION
    CONNECT TO INVITE-PARENT FUNCTION
@@ -380,7 +386,6 @@ if (
 
 }
 
-const sharedSupabase = window.malizayoSupabase;
 
 let editingAnnouncementId = null;
 
