@@ -149,16 +149,38 @@
             throw learnersError;
         }
 
-        if (
-            !learners ||
-            learners.length !== learnerIds.length
-        ) {
+        
+// =====================================
+// LOAD PUBLISHED ACADEMIC RESULTS
+// RLS RESTRICTS RESULTS TO LINKED LEARNERS
+// =====================================
 
-            throw new Error(
-                "Some linked learner records could not be verified. Please contact the school."
-            );
+const {
+    data: academicResults,
+    error: academicResultsError
+} = await db
+    .from("academic_results")
+    .select(`
+        id,
+        learner_id,
+        academic_year,
+        term,
+        subject,
+        assessment_name,
+        mark_obtained,
+        total_marks,
+        teacher_comment
+    `)
+    .in("learner_id", learnerIds)
+    .eq("is_published", true)
+    .order("academic_year", { ascending: false })
+    .order("term", { ascending: false })
+    .order("subject", { ascending: true });
 
-        }
+if (academicResultsError) {
+    throw academicResultsError;
+}
+
 
 
         // =====================================
@@ -436,6 +458,307 @@
 
         });
 
+// =====================================
+// DISPLAY LIVE ACADEMIC RESULTS
+// =====================================
+
+const progressSection =
+    document.getElementById("progress");
+
+if (!progressSection) {
+    throw new Error(
+        "Academic progress section could not be found."
+    );
+}
+
+progressSection.replaceChildren();
+
+const progressHeading =
+    createTextElement(
+        "div",
+        "parent-panel-heading",
+        ""
+    );
+
+progressHeading.appendChild(
+    createTextElement(
+        "h2",
+        "",
+        "Academic Progress"
+    )
+);
+
+progressHeading.appendChild(
+    createTextElement(
+        "span",
+        "",
+        "Published School Results"
+    )
+);
+
+progressSection.appendChild(progressHeading);
+
+
+// CREATE RESULTS TABLE
+
+const progressWrapper =
+    document.createElement("div");
+
+progressWrapper.className =
+    "academic-table-wrapper";
+
+const resultsTable =
+    document.createElement("table");
+
+resultsTable.className =
+    "academic-table";
+
+const resultsHead =
+    document.createElement("thead");
+
+const headerRow =
+    document.createElement("tr");
+
+[
+    "Learner",
+    "Year",
+    "Term",
+    "Subject",
+    "Assessment",
+    "Mark",
+    "Progress",
+    "Teacher Comment"
+].forEach(function (headingText) {
+
+    headerRow.appendChild(
+        createTextElement(
+            "th",
+            "",
+            headingText
+        )
+    );
+
+});
+
+resultsHead.appendChild(headerRow);
+
+const resultsBody =
+    document.createElement("tbody");
+
+
+// MAP LEARNER IDS TO NAMES
+
+const learnerNameMap = new Map(
+    learners.map(learner => [
+        learner.id,
+        learner.full_name
+    ])
+);
+
+
+// HANDLE NO PUBLISHED RESULTS
+
+if (
+    !academicResults ||
+    academicResults.length === 0
+) {
+
+    const row =
+        document.createElement("tr");
+
+    const cell =
+        document.createElement("td");
+
+    cell.colSpan = 8;
+
+    cell.textContent =
+        "No academic results have been published for your linked learners yet.";
+
+    row.appendChild(cell);
+
+    resultsBody.appendChild(row);
+
+}
+
+
+// DISPLAY PUBLISHED RESULTS
+
+(academicResults || []).forEach(function (result) {
+
+    const row =
+        document.createElement("tr");
+
+    const mark =
+        Number(result.mark_obtained);
+
+    const total =
+        Number(result.total_marks);
+
+    const percentage =
+        (mark / total) * 100;
+
+    const formattedMark =
+        mark.toLocaleString("en-ZA", {
+            maximumFractionDigits: 2
+        });
+
+    const formattedTotal =
+        total.toLocaleString("en-ZA", {
+            maximumFractionDigits: 2
+        });
+
+    const formattedPercentage =
+        percentage.toLocaleString("en-ZA", {
+            maximumFractionDigits: 1
+        });
+
+
+    // LEARNER
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            learnerNameMap.get(result.learner_id) ||
+                "Linked Learner"
+        )
+    );
+
+
+    // YEAR
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            String(result.academic_year)
+        )
+    );
+
+
+    // TERM
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            "Term " + result.term
+        )
+    );
+
+
+    // SUBJECT
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            result.subject
+        )
+    );
+
+
+    // ASSESSMENT
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            result.assessment_name
+        )
+    );
+
+
+    // MARK
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            formattedMark + " / " + formattedTotal
+        )
+    );
+
+
+    // PROGRESS BAR
+
+    const progressCell =
+        document.createElement("td");
+
+    const progressBar =
+        document.createElement("div");
+
+    progressBar.className = "progress-bar";
+
+    const progressFill =
+        document.createElement("div");
+
+    progressFill.style.width =
+        Math.min(100, Math.max(0, percentage)) + "%";
+
+    progressBar.appendChild(progressFill);
+
+    progressCell.appendChild(progressBar);
+
+    progressCell.appendChild(
+        createTextElement(
+            "span",
+            "",
+            formattedPercentage + "%"
+        )
+    );
+
+    row.appendChild(progressCell);
+
+
+    // TEACHER COMMENT
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            result.teacher_comment ||
+                "No comment provided"
+        )
+    );
+
+
+    resultsBody.appendChild(row);
+
+});
+
+
+resultsTable.appendChild(resultsHead);
+
+resultsTable.appendChild(resultsBody);
+
+progressWrapper.appendChild(resultsTable);
+
+progressSection.appendChild(progressWrapper);
+
+
+progressSection.appendChild(
+    createTextElement(
+        "p",
+        "document-note",
+        "Only academic results published by Malizayo Primary School are displayed."
+    )
+);
+
+
+// SHOW ACADEMIC PROGRESS SECTION
+
+progressSection.hidden = false;
+
+const progressNavigationLink =
+    dashboard.querySelector(
+        '.parent-navigation a[href="#progress"]'
+    );
+
+if (progressNavigationLink) {
+    progressNavigationLink.hidden = false;
+}
+
 
         // =====================================
         // REMOVE FICTIONAL INFORMATION
@@ -455,12 +778,11 @@
         // to live school database records.
 
         const unfinishedSections = [
-            "progress",
-            "attendance",
-            "reports",
-            "announcements",
-            "admissions"
-        ];
+    "attendance",
+    "reports",
+    "announcements",
+    "admissions"
+];
 
         unfinishedSections.forEach(function (id) {
 
