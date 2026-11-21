@@ -723,53 +723,183 @@
 
 <!-- PUBLISH LEARNER RESULTS -->
 
+
+<!-- LIVE ACADEMIC RESULTS MANAGEMENT -->
+
 <section class="admin-panel" id="publish-results">
 
     <div class="panel-heading">
-        <h2>Publish Learner Results</h2>
-        <span>Demonstration Only</span>
+        <h2>Academic Results Management</h2>
+        <span>Live Supabase Database</span>
     </div>
 
     <p class="document-note">
-        Select a fictional learner, subject and mark.
+        Enter learner assessments and publish verified
+        academic results to the Parent Portal.
     </p>
 
-    <form id="resultForm" class="result-publish-form">
+    <form id="academicResultForm"
+          class="result-publish-form">
 
-        <label for="resultLearner">Select Learner</label>
+        <label for="academicResultLearner">
+            Select Learner
+        </label>
 
-        <select id="resultLearner" required>
-            <option value="">Choose learner</option>
-            <option value="Sample Learner A">
-                Sample Learner A
-            </option>
+        <select id="academicResultLearner" required>
+            <option value="">Loading learners...</option>
         </select>
 
-        <label for="resultSubject">Select Subject</label>
+        <label for="academicResultYear">
+            Academic Year
+        </label>
 
-        <select id="resultSubject" required>
-            <option value="">Choose subject</option>
-            <option>Mathematics</option>
-            <option>English</option>
-            <option>isiZulu</option>
-            <option>Natural Sciences</option>
+        <input
+            type="number"
+            id="academicResultYear"
+            min="2000"
+            max="2100"
+            value="2026"
+            required
+        >
+
+        <label for="academicResultTerm">
+            School Term
+        </label>
+
+        <select id="academicResultTerm" required>
+            <option value="">Choose term</option>
+            <option value="1">Term 1</option>
+            <option value="2">Term 2</option>
+            <option value="3">Term 3</option>
+            <option value="4">Term 4</option>
         </select>
 
-        <label for="resultMark">Enter Mark (%)</label>
+        <label for="academicResultSubject">
+            Subject
+        </label>
 
-        <input type="number"
-               id="resultMark"
-               min="0"
-               max="100"
-               required>
+        <input
+            type="text"
+            id="academicResultSubject"
+            maxlength="100"
+            placeholder="e.g. Mathematics"
+            required
+        >
 
-        <button type="submit">
-            Publish Sample Result
-        </button>
+        <label for="academicAssessmentName">
+            Assessment Name
+        </label>
+
+        <input
+            type="text"
+            id="academicAssessmentName"
+            maxlength="150"
+            value="Term Result"
+            required
+        >
+
+        <label for="academicMarkObtained">
+            Mark Obtained
+        </label>
+
+        <input
+            type="number"
+            id="academicMarkObtained"
+            min="0"
+            step="0.01"
+            placeholder="e.g. 78"
+            required
+        >
+
+        <label for="academicTotalMarks">
+            Total Possible Marks
+        </label>
+
+        <input
+            type="number"
+            id="academicTotalMarks"
+            min="0.01"
+            step="0.01"
+            value="100"
+            required
+        >
+
+        <label for="academicTeacherComment">
+            Teacher Comment (Optional)
+        </label>
+
+        <textarea
+            id="academicTeacherComment"
+            rows="3"
+            maxlength="1000"
+            placeholder="Enter feedback about the learner's performance"
+        ></textarea>
+
+        <div class="result-action-buttons">
+
+            <button
+                type="submit"
+                name="resultAction"
+                value="draft"
+                class="secondary-button"
+            >
+                Save as Draft
+            </button>
+
+            <button
+                type="submit"
+                name="resultAction"
+                value="publish"
+            >
+                Publish Result
+            </button>
+
+        </div>
 
     </form>
 
-    <p id="resultMessage" role="status"></p>
+    <p
+        id="academicResultMessage"
+        role="status"
+        aria-live="polite">
+    </p>
+
+
+    <!-- SAVED RESULTS -->
+
+    <hr>
+
+    <h3>Academic Results Register</h3>
+
+    <div class="admin-table-container">
+
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>Learner</th>
+                    <th>Year</th>
+                    <th>Term</th>
+                    <th>Subject</th>
+                    <th>Assessment</th>
+                    <th>Mark</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="adminAcademicResultsTableBody">
+
+                <tr>
+                    <td colspan="7">
+                        Loading academic results...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
 
 </section>
 
