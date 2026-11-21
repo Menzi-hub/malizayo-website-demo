@@ -1030,12 +1030,13 @@ if (progressNavigationLink) {
         // Hide sections that are not yet connected
         // to live school database records.
 
-       const unfinishedSections = [
-    "progress",
+       
+const unfinishedSections = [
     "reports",
     "announcements",
     "admissions"
 ];
+
 
         unfinishedSections.forEach(function (id) {
 
