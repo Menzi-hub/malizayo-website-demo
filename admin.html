@@ -1123,53 +1123,160 @@
 
 <!-- REPORT UPLOADS -->
 
-            <section class="admin-panel" id="reports">
+           
+<!-- =====================================
+     PRIVATE TERM REPORT MANAGEMENT
+===================================== -->
 
-                <div class="panel-heading">
+<section class="admin-panel" id="reports">
 
-                    <h2>Report Uploads</h2>
+    <div class="panel-heading">
+        <h2>Term Report Management</h2>
+        <span>Private Supabase Storage</span>
+    </div>
 
-                    <span>Demonstration</span>
+    <p class="document-note">
+        Upload official learner term reports securely.
+        Reports can be saved as drafts or published
+        to authorised parents.
+    </p>
 
-                </div>
+    <h3>Upload Learner Report</h3>
 
-                <div class="report-upload-area">
+    <form id="termReportForm"
+          class="result-publish-form">
 
-                    <h3>Upload School Reports</h3>
+        <label for="termReportLearner">
+            Select Learner
+        </label>
 
-                    <p>
-                        Select a sample report to test the file checks.
-                    </p>
+        <select id="termReportLearner" required>
+            <option value="">Loading learners...</option>
+        </select>
 
-                    <label for="reportFile">
-                        Choose Report File
-                    </label>
 
-                    <input
-                        type="file"
-                        id="reportFile"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                    >
+        <label for="termReportYear">
+            Academic Year
+        </label>
 
-                    <button
-                        type="button"
-                        id="checkReportButton">
-                        Check Selected File
-                    </button>
+        <input
+            type="number"
+            id="termReportYear"
+            min="2000"
+            max="2100"
+            value="2026"
+            required
+        >
 
-                    <p id="reportMessage"
-                       role="status"
-                       aria-live="polite"></p>
 
-                    <p class="document-note">
-                        Accepted formats: PDF, JPG and PNG.
-                        Maximum size: 5 MB.
-                        Files are not saved or uploaded.
-                    </p>
+        <label for="termReportTerm">
+            School Term
+        </label>
 
-                </div>
+        <select id="termReportTerm" required>
+            <option value="">Choose term</option>
+            <option value="1">Term 1</option>
+            <option value="2">Term 2</option>
+            <option value="3">Term 3</option>
+            <option value="4">Term 4</option>
+        </select>
 
-            </section>
+
+        <label for="termReportTitle">
+            Report Title
+        </label>
+
+        <input
+            type="text"
+            id="termReportTitle"
+            maxlength="150"
+            value="Term Report"
+            required
+        >
+
+
+        <label for="termReportFile">
+            Select PDF Report
+        </label>
+
+        <input
+            type="file"
+            id="termReportFile"
+            accept=".pdf,application/pdf"
+            required
+        >
+
+        <p class="document-note">
+            PDF files only. Maximum file size: 5 MB.
+            Reports are stored privately.
+        </p>
+
+
+        <div class="result-action-buttons">
+
+            <button
+                type="submit"
+                name="reportAction"
+                value="draft"
+                class="secondary-button">
+                Save as Draft
+            </button>
+
+            <button
+                type="submit"
+                name="reportAction"
+                value="publish">
+                Upload and Publish Report
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <p
+        id="termReportMessage"
+        role="status"
+        aria-live="polite">
+    </p>
+
+
+    <!-- SAVED REPORT REGISTER -->
+
+    <hr>
+
+    <h3>Uploaded Term Reports</h3>
+
+    <div class="admin-table-container">
+
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>Learner</th>
+                    <th>Year</th>
+                    <th>Term</th>
+                    <th>Report Title</th>
+                    <th>Publication Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="adminTermReportsTableBody">
+
+                <tr>
+                    <td colspan="5">
+                        Loading term reports...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+ 
 
 
             <!-- FOOTER -->
