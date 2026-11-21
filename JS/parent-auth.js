@@ -255,47 +255,97 @@
     }
 
 
+   
+async function showAccountStatus(userId) {
+
+    // VERIFY THE PARENT PROFILE AND LEARNER LINKS
+
+    const account =
+        await verifyParentProfile(userId);
+
+
     // =====================================
-    // SHOW ACCOUNT STATUS
-    // KEEP DEMONSTRATION DASHBOARD HIDDEN
+    // PARENT HAS NO LINKED LEARNER
     // =====================================
 
-    async function showAccountStatus(userId) {
-
-        const account =
-            await verifyParentProfile(userId);
+    if (account.linkedLearners.length === 0) {
 
         loginPanel.hidden = false;
         loginPanel.style.display = "flex";
 
         passwordPanel.hidden = true;
-        passwordPanel.style.display = "none";
-
         dashboard.hidden = true;
 
         loginForm.hidden = true;
-
         forgotPasswordButton.hidden = true;
 
         createLogoutButton();
-
         logoutButton.hidden = false;
 
         loginMessage.style.color = "#216638";
 
-        if (account.linkedLearners.length === 0) {
+        loginMessage.textContent =
+            "Your parent account is active, but the school has not yet linked a learner to it. Please contact the school.";
 
-            loginMessage.textContent =
-                "Your parent account is active, but the school has not yet linked a learner to it. Please contact the school.";
-
-        } else {
-
-            loginMessage.textContent =
-                "Your parent account and learner link have been verified. The live Parent Portal is still being completed. Your demonstration learner records remain hidden.";
-
-        }
+        return;
 
     }
+
+
+    // =====================================
+    // LOAD LIVE PARENT AND LEARNER DATA
+    // =====================================
+
+    if (
+        typeof window.loadParentDashboard !== "function"
+    ) {
+
+        throw new Error(
+            "The live Parent Dashboard has not loaded. Please refresh the page."
+        );
+
+    }
+
+
+    await window.loadParentDashboard(userId);
+
+
+    // =====================================
+    // DISPLAY LIVE PARENT DASHBOARD
+    // =====================================
+
+    passwordPanel.hidden = true;
+    passwordPanel.style.display = "none";
+
+    loginPanel.hidden = true;
+    loginPanel.style.display = "none";
+
+    dashboard.hidden = false;
+
+
+    // =====================================
+    // PLACE LOGOUT BUTTON IN DASHBOARD
+    // =====================================
+
+    createLogoutButton();
+
+    const accountArea =
+        dashboard.querySelector(".parent-account");
+
+    if (!accountArea) {
+
+        throw new Error(
+            "Parent account display could not be found."
+        );
+
+    }
+
+    accountArea.appendChild(logoutButton);
+
+    logoutButton.hidden = false;
+
+}
+
 
 
     // =====================================
