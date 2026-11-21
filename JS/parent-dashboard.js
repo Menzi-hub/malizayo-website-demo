@@ -328,6 +328,33 @@ if (academicResultsError) {
 
         }
 
+// =====================================
+// LOAD PUBLISHED ATTENDANCE RECORDS
+// ONLY FOR LINKED LEARNERS
+// =====================================
+
+const {
+    data: attendanceRecords,
+    error: attendanceError
+} = await db
+    .from("attendance_records")
+    .select(`
+        id,
+        learner_id,
+        attendance_date,
+        status,
+        parent_note
+    `)
+    .in("learner_id", learnerIds)
+    .eq("is_published", true)
+    .order("attendance_date", {
+        ascending: false
+    });
+
+if (attendanceError) {
+    throw attendanceError;
+}
+
         learnerSection.replaceChildren();
 
 
@@ -457,6 +484,232 @@ if (academicResultsError) {
             learnerSection.appendChild(profile);
 
         });
+
+// =====================================
+// DISPLAY LIVE ATTENDANCE HISTORY
+// =====================================
+
+const attendanceSection =
+    document.getElementById("attendance");
+
+if (!attendanceSection) {
+    throw new Error(
+        "Attendance section could not be found."
+    );
+}
+
+attendanceSection.replaceChildren();
+
+
+// SECTION HEADING
+
+const attendanceHeading =
+    createTextElement(
+        "div",
+        "parent-panel-heading",
+        ""
+    );
+
+attendanceHeading.appendChild(
+    createTextElement(
+        "h2",
+        "",
+        "Attendance History"
+    )
+);
+
+attendanceHeading.appendChild(
+    createTextElement(
+        "span",
+        "",
+        "Published School Records"
+    )
+);
+
+attendanceSection.appendChild(attendanceHeading);
+
+
+// ATTENDANCE TABLE
+
+const attendanceWrapper =
+    document.createElement("div");
+
+attendanceWrapper.className =
+    "academic-table-wrapper";
+
+const attendanceTable =
+    document.createElement("table");
+
+attendanceTable.className =
+    "academic-table";
+
+const attendanceHead =
+    document.createElement("thead");
+
+const attendanceHeaderRow =
+    document.createElement("tr");
+
+[
+    "Learner",
+    "Date",
+    "Status",
+    "Note from School"
+].forEach(function (headingText) {
+
+    attendanceHeaderRow.appendChild(
+        createTextElement(
+            "th",
+            "",
+            headingText
+        )
+    );
+
+});
+
+attendanceHead.appendChild(attendanceHeaderRow);
+
+const attendanceBody =
+    document.createElement("tbody");
+
+
+// MATCH LEARNER IDS TO THEIR NAMES
+
+const attendanceLearnerMap = new Map(
+    learners.map(learner => [
+        learner.id,
+        learner.full_name
+    ])
+);
+
+
+// HANDLE NO ATTENDANCE RECORDS
+
+if (
+    !attendanceRecords ||
+    attendanceRecords.length === 0
+) {
+
+    const row =
+        document.createElement("tr");
+
+    const cell =
+        document.createElement("td");
+
+    cell.colSpan = 4;
+
+    cell.textContent =
+        "No published attendance records are available yet.";
+
+    row.appendChild(cell);
+
+    attendanceBody.appendChild(row);
+
+}
+
+
+// DISPLAY ATTENDANCE RECORDS
+
+(attendanceRecords || []).forEach(function (record) {
+
+    const row =
+        document.createElement("tr");
+
+
+    // LEARNER NAME
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            attendanceLearnerMap.get(record.learner_id) ||
+                "Linked Learner"
+        )
+    );
+
+
+    // ATTENDANCE DATE
+
+    const date =
+        new Date(
+            record.attendance_date + "T00:00:00"
+        );
+
+    const formattedDate =
+        Number.isNaN(date.getTime())
+            ? record.attendance_date
+            : date.toLocaleDateString("en-ZA");
+
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            formattedDate
+        )
+    );
+
+
+    // STATUS
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            record.status
+        )
+    );
+
+
+    // NOTE
+
+    row.appendChild(
+        createTextElement(
+            "td",
+            "",
+            record.parent_note ||
+                "No additional note"
+        )
+    );
+
+
+    attendanceBody.appendChild(row);
+
+});
+
+
+attendanceTable.appendChild(attendanceHead);
+
+attendanceTable.appendChild(attendanceBody);
+
+attendanceWrapper.appendChild(attendanceTable);
+
+attendanceSection.appendChild(attendanceWrapper);
+
+
+// INFORMATION NOTE
+
+attendanceSection.appendChild(
+    createTextElement(
+        "p",
+        "document-note",
+        "Attendance information is provided by Malizayo Primary School."
+    )
+);
+
+
+// SHOW ATTENDANCE SECTION
+
+attendanceSection.hidden = false;
+
+const attendanceNavigationLink =
+    dashboard.querySelector(
+        '.parent-navigation a[href="#attendance"]'
+    );
+
+if (attendanceNavigationLink) {
+    attendanceNavigationLink.hidden = false;
+}
+
 
 // =====================================
 // DISPLAY LIVE ACADEMIC RESULTS
@@ -777,8 +1030,8 @@ if (progressNavigationLink) {
         // Hide sections that are not yet connected
         // to live school database records.
 
-        const unfinishedSections = [
-    "attendance",
+       const unfinishedSections = [
+    "progress",
     "reports",
     "announcements",
     "admissions"
