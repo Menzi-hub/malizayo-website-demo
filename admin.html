@@ -1081,17 +1081,31 @@
             Announcement Message
         </label>
 
-        <textarea
-            id="announcementContent"
-            rows="5"
-            maxlength="1000"
-            placeholder="Write your announcement here..."
-            required
-        ></textarea>
+        
+<textarea
+    id="announcementContent"
+    rows="5"
+    maxlength="1000"
+    placeholder="Write your announcement here..."
+    required
+></textarea>
 
-        <button type="submit">
-            Publish Announcement
-        </button>
+<label for="announcementPublicationStatus">
+    Publication Status
+</label>
+
+<select
+    id="announcementPublicationStatus"
+    required
+>
+    <option value="draft">Save as Draft</option>
+    <option value="publish">Publish Immediately</option>
+</select>
+
+<button type="submit">
+    Save Announcement
+</button>
+
 
     </form>
 
