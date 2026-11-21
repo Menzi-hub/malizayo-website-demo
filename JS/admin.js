@@ -1558,4 +1558,705 @@ if (sharedSupabase) {
 
 })();
 
+/* =========================================
+   MALIZAYO PRIMARY SCHOOL
+   LIVE LEARNER MANAGEMENT
+   PARENT-LEARNER LINKING
+========================================= */
+
+(function initializeLearnerManagement() {
+
+    const MPS_ADMIN_ID =
+        "a955d9d9-e91f-4fd9-b1e7-d015af08ae04";
+
+    const learnerForm =
+        document.getElementById("learnerRegistrationForm");
+
+    const parentLinkForm =
+        document.getElementById("parentLearnerLinkForm");
+
+    const learnerMessage =
+        document.getElementById("learnerRegistrationMessage");
+
+    const linkMessage =
+        document.getElementById("parentLearnerLinkMessage");
+
+    const learnersTable =
+        document.getElementById("adminLearnersTableBody");
+
+    const linksTable =
+        document.getElementById("adminParentLinksTableBody");
+
+    const parentSelect =
+        document.getElementById("linkParentSelect");
+
+    const learnerSelect =
+        document.getElementById("linkLearnerSelect");
+
+    const registerButton =
+        document.getElementById("registerLearnerButton");
+
+    const linkButton =
+        document.getElementById("linkLearnerButton");
+
+
+    // CHECK PAGE AND SUPABASE CONNECTION
+
+    if (
+        !learnerForm ||
+        !parentLinkForm ||
+        !sharedSupabase
+    ) {
+        return;
+    }
+
+
+    // DISPLAY MESSAGES SAFELY
+
+    function setMessage(element, message, success) {
+
+        if (!element) return;
+
+        element.textContent = message;
+
+        element.style.color = success
+            ? "#216638"
+            : "#922E26";
+
+    }
+
+
+    // VERIFY AUTHORISED ADMINISTRATOR
+
+    async function requireSchoolAdmin() {
+
+        const {
+            data,
+            error
+        } = await sharedSupabase.auth.getUser();
+
+        if (
+            error ||
+            !data.user ||
+            data.user.id !== MPS_ADMIN_ID
+        ) {
+
+            throw new Error(
+                "Only the authorised school administrator can manage learner records."
+            );
+
+        }
+
+        return data.user;
+
+    }
+
+
+    // SAFELY CREATE TABLE CELLS
+
+    function addCell(row, value) {
+
+        const cell =
+            document.createElement("td");
+
+        cell.textContent =
+            value === null || value === undefined
+                ? "-"
+                : String(value);
+
+        row.appendChild(cell);
+
+    }
+
+
+    // CREATE SELECT OPTIONS
+
+    function addOption(select, value, label) {
+
+        const option =
+            document.createElement("option");
+
+        option.value = value;
+
+        option.textContent = label;
+
+        select.appendChild(option);
+
+    }
+
+
+    // DISPLAY REGISTERED LEARNERS
+
+    function renderLearners(learners) {
+
+        learnersTable.replaceChildren();
+
+        if (learners.length === 0) {
+
+            const row =
+                document.createElement("tr");
+
+            const cell =
+                document.createElement("td");
+
+            cell.colSpan = 5;
+
+            cell.textContent =
+                "No learner records have been registered yet.";
+
+            row.appendChild(cell);
+
+            learnersTable.appendChild(row);
+
+            return;
+
+        }
+
+
+        learners.forEach(function (learner) {
+
+            const row =
+                document.createElement("tr");
+
+            addCell(row, learner.admission_number);
+            addCell(row, learner.full_name);
+            addCell(row, learner.grade);
+            addCell(row, learner.class_name || "-");
+            addCell(row, learner.learner_status);
+
+            learnersTable.appendChild(row);
+
+        });
+
+    }
+
+
+    // DISPLAY PARENT-LEARNER LINKS
+
+    function renderParentLinks(
+        links,
+        parents,
+        learners
+    ) {
+
+        linksTable.replaceChildren();
+
+        const parentMap = new Map(
+            parents.map(parent => [
+                parent.user_id,
+                parent
+            ])
+        );
+
+        const learnerMap = new Map(
+            learners.map(learner => [
+                learner.id,
+                learner
+            ])
+        );
+
+
+        if (links.length === 0) {
+
+            const row =
+                document.createElement("tr");
+
+            const cell =
+                document.createElement("td");
+
+            cell.colSpan = 3;
+
+            cell.textContent =
+                "No parent-learner relationships have been created yet.";
+
+            row.appendChild(cell);
+
+            linksTable.appendChild(row);
+
+            return;
+
+        }
+
+
+        links.forEach(function (link) {
+
+            const parent =
+                parentMap.get(link.parent_user_id);
+
+            const learner =
+                learnerMap.get(link.learner_id);
+
+            const row =
+                document.createElement("tr");
+
+            addCell(
+                row,
+                parent
+                    ? parent.full_name + " (" + parent.email + ")"
+                    : "Parent profile unavailable"
+            );
+
+            addCell(
+                row,
+                learner
+                    ? learner.full_name
+                    : "Learner unavailable"
+            );
+
+            addCell(
+                row,
+                link.relationship_to_learner
+            );
+
+            linksTable.appendChild(row);
+
+        });
+
+    }
+
+
+    // LOAD PARENTS AND LEARNERS
+
+    async function loadLearnerManagement() {
+
+        const [
+            parentsResult,
+            learnersResult,
+            linksResult
+        ] = await Promise.all([
+
+            sharedSupabase
+                .from("parent_profiles")
+                .select("user_id, full_name, email")
+                .order("full_name"),
+
+            sharedSupabase
+                .from("learners")
+                .select(
+                    "id, admission_number, full_name, grade, class_name, learner_status"
+                )
+                .order("full_name"),
+
+            sharedSupabase
+                .from("parent_learners")
+                .select(
+                    "parent_user_id, learner_id, relationship_to_learner"
+                )
+
+        ]);
+
+
+        if (parentsResult.error) {
+            throw parentsResult.error;
+        }
+
+        if (learnersResult.error) {
+            throw learnersResult.error;
+        }
+
+        if (linksResult.error) {
+            throw linksResult.error;
+        }
+
+
+        const parents =
+            parentsResult.data || [];
+
+        const learners =
+            learnersResult.data || [];
+
+        const links =
+            linksResult.data || [];
+
+
+        // POPULATE PARENT SELECT
+
+        parentSelect.replaceChildren();
+
+        addOption(
+            parentSelect,
+            "",
+            "Select a parent or guardian"
+        );
+
+        parents.forEach(function (parent) {
+
+            addOption(
+                parentSelect,
+                parent.user_id,
+                parent.full_name + " — " + parent.email
+            );
+
+        });
+
+
+        // POPULATE LEARNER SELECT
+
+        learnerSelect.replaceChildren();
+
+        addOption(
+            learnerSelect,
+            "",
+            "Select a learner"
+        );
+
+        learners.forEach(function (learner) {
+
+            addOption(
+                learnerSelect,
+                learner.id,
+                learner.admission_number +
+                    " — " +
+                    learner.full_name +
+                    " (" +
+                    learner.grade +
+                    ")"
+            );
+
+        });
+
+
+        // DISPLAY TABLES
+
+        renderLearners(learners);
+
+        renderParentLinks(
+            links,
+            parents,
+            learners
+        );
+
+    }
+
+
+    // =====================================
+    // REGISTER A LEARNER
+    // =====================================
+
+    learnerForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+            registerButton.disabled = true;
+
+            registerButton.textContent =
+                "Registering...";
+
+
+            try {
+
+                await requireSchoolAdmin();
+
+                const admissionNumber =
+                    document.getElementById(
+                        "learnerAdmissionNumber"
+                    ).value.trim();
+
+                const fullName =
+                    document.getElementById(
+                        "learnerFullName"
+                    ).value.trim();
+
+                const dateOfBirth =
+                    document.getElementById(
+                        "learnerDateOfBirth"
+                    ).value;
+
+                const grade =
+                    document.getElementById(
+                        "learnerGrade"
+                    ).value;
+
+                const className =
+                    document.getElementById(
+                        "learnerClass"
+                    ).value.trim();
+
+
+                if (
+                    !admissionNumber ||
+                    !fullName ||
+                    !dateOfBirth ||
+                    !grade
+                ) {
+
+                    throw new Error(
+                        "Please complete all required learner information."
+                    );
+
+                }
+
+
+                const today =
+                    new Date().toISOString().slice(0, 10);
+
+                if (dateOfBirth > today) {
+
+                    throw new Error(
+                        "The learner's date of birth cannot be in the future."
+                    );
+
+                }
+
+
+                setMessage(
+                    learnerMessage,
+                    "Saving learner record...",
+                    true
+                );
+
+
+                const {
+                    error
+                } = await sharedSupabase
+                    .from("learners")
+                    .insert({
+
+                        admission_number:
+                            admissionNumber,
+
+                        full_name:
+                            fullName,
+
+                        date_of_birth:
+                            dateOfBirth,
+
+                        grade:
+                            grade,
+
+                        class_name:
+                            className || null,
+
+                        learner_status:
+                            "Active"
+
+                    });
+
+
+                if (error) {
+
+                    if (error.code === "23505") {
+
+                        throw new Error(
+                            "This admission number is already registered."
+                        );
+
+                    }
+
+                    throw error;
+
+                }
+
+
+                learnerForm.reset();
+
+                setMessage(
+                    learnerMessage,
+                    "Learner registered successfully.",
+                    true
+                );
+
+                await loadLearnerManagement();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Learner registration failed:",
+                    error
+                );
+
+                setMessage(
+                    learnerMessage,
+                    error.message ||
+                        "Unable to register learner.",
+                    false
+                );
+
+            } finally {
+
+                registerButton.disabled = false;
+
+                registerButton.textContent =
+                    "Register Learner";
+
+            }
+
+        }
+    );
+
+
+    // =====================================
+    // LINK PARENT TO LEARNER
+    // =====================================
+
+    parentLinkForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+            linkButton.disabled = true;
+
+            linkButton.textContent =
+                "Creating relationship...";
+
+
+            try {
+
+                const admin =
+                    await requireSchoolAdmin();
+
+                const parentUserId =
+                    parentSelect.value;
+
+                const learnerId =
+                    learnerSelect.value;
+
+                const relationship =
+                    document.getElementById(
+                        "linkRelationship"
+                    ).value;
+
+
+                if (
+                    !parentUserId ||
+                    !learnerId ||
+                    !relationship
+                ) {
+
+                    throw new Error(
+                        "Please select a parent, learner and relationship."
+                    );
+
+                }
+
+
+                setMessage(
+                    linkMessage,
+                    "Verifying parent and learner records...",
+                    true
+                );
+
+
+                // INSERT THE AUTHORISED RELATIONSHIP
+
+                const {
+                    error
+                } = await sharedSupabase
+                    .from("parent_learners")
+                    .insert({
+
+                        parent_user_id:
+                            parentUserId,
+
+                        learner_id:
+                            learnerId,
+
+                        relationship_to_learner:
+                            relationship,
+
+                        linked_by:
+                            admin.id
+
+                    });
+
+
+                if (error) {
+
+                    if (error.code === "23505") {
+
+                        throw new Error(
+                            "This parent is already linked to this learner."
+                        );
+
+                    }
+
+                    throw error;
+
+                }
+
+
+                parentLinkForm.reset();
+
+                setMessage(
+                    linkMessage,
+                    "Parent successfully linked to learner.",
+                    true
+                );
+
+                await loadLearnerManagement();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Parent-learner linking failed:",
+                    error
+                );
+
+                setMessage(
+                    linkMessage,
+                    error.message ||
+                        "Unable to link parent to learner.",
+                    false
+                );
+
+            } finally {
+
+                linkButton.disabled = false;
+
+                linkButton.textContent =
+                    "Link Parent and Learner";
+
+            }
+
+        }
+    );
+
+
+    // =====================================
+    // INITIALISE MANAGEMENT PAGE
+    // =====================================
+
+    async function initialise() {
+
+        try {
+
+            await requireSchoolAdmin();
+
+            await loadLearnerManagement();
+
+            setMessage(
+                learnerMessage,
+                "Learner management connected to Supabase.",
+                true
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Learner management initialisation failed:",
+                error
+            );
+
+            setMessage(
+                learnerMessage,
+                error.message ||
+                    "Unable to load learner management.",
+                false
+            );
+
+        }
+
+    }
+
+
+    initialise();
+
+})();
+
+
 
