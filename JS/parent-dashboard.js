@@ -392,6 +392,34 @@ if (termReportsError) {
 
 }
 
+// =====================================
+// LOAD PUBLISHED SCHOOL ANNOUNCEMENTS
+// =====================================
+
+const {
+    data: schoolAnnouncements,
+    error: schoolAnnouncementsError
+} = await db
+    .from("announcements")
+    .select(`
+        id,
+        title,
+        category,
+        content,
+        published_at
+    `)
+    .eq("is_published", true)
+    .order("published_at", {
+        ascending: false
+    });
+
+if (schoolAnnouncementsError) {
+    console.error(
+        "School announcements could not be loaded:",
+        schoolAnnouncementsError
+    );
+}
+
         learnerSection.replaceChildren();
 
 
@@ -1430,6 +1458,207 @@ if (progressNavigationLink) {
     progressNavigationLink.hidden = false;
 }
 
+// =====================================
+// DISPLAY LIVE SCHOOL ANNOUNCEMENTS
+// =====================================
+
+const announcementsSection =
+    document.getElementById("announcements");
+
+if (announcementsSection) {
+
+    announcementsSection.replaceChildren();
+
+
+    // SECTION HEADING
+
+    const announcementsHeading =
+        createTextElement(
+            "div",
+            "parent-panel-heading",
+            ""
+        );
+
+    announcementsHeading.appendChild(
+        createTextElement(
+            "h2",
+            "",
+            "School Announcements"
+        )
+    );
+
+    announcementsHeading.appendChild(
+        createTextElement(
+            "span",
+            "",
+            "Official School Notices"
+        )
+    );
+
+    announcementsSection.appendChild(
+        announcementsHeading
+    );
+
+
+    // HANDLE DATABASE ERRORS
+
+    if (schoolAnnouncementsError) {
+
+        announcementsSection.appendChild(
+            createTextElement(
+                "p",
+                "parent-message",
+                "School announcements are temporarily unavailable. Please try again later."
+            )
+        );
+
+    }
+
+
+    // HANDLE EMPTY ANNOUNCEMENT LIST
+
+    else if (
+        !schoolAnnouncements ||
+        schoolAnnouncements.length === 0
+    ) {
+
+        announcementsSection.appendChild(
+            createTextElement(
+                "p",
+                "document-note",
+                "There are currently no published school announcements."
+            )
+        );
+
+    }
+
+
+    // DISPLAY PUBLISHED ANNOUNCEMENTS
+
+    else {
+
+        schoolAnnouncements.forEach(
+            function (announcement) {
+
+                const card =
+                    createTextElement(
+                        "article",
+                        "announcement-item",
+                        ""
+                    );
+
+
+                const dot =
+                    createTextElement(
+                        "span",
+                        "announcement-dot",
+                        ""
+                    );
+
+
+                const details =
+                    document.createElement("div");
+
+
+                // CATEGORY
+
+                details.appendChild(
+                    createTextElement(
+                        "span",
+                        "announcement-category",
+                        announcement.category
+                    )
+                );
+
+
+                // TITLE
+
+                details.appendChild(
+                    createTextElement(
+                        "h3",
+                        "",
+                        announcement.title
+                    )
+                );
+
+
+                // PUBLICATION DATE
+
+                const publishedDate =
+                    announcement.published_at
+                        ? new Date(
+                            announcement.published_at
+                        )
+                        : null;
+
+                const formattedDate =
+                    publishedDate &&
+                    !Number.isNaN(
+                        publishedDate.getTime()
+                    )
+                        ? publishedDate.toLocaleDateString(
+                            "en-ZA",
+                            {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric"
+                            }
+                        )
+                        : "Date unavailable";
+
+
+                details.appendChild(
+                    createTextElement(
+                        "small",
+                        "",
+                        "Published: " + formattedDate
+                    )
+                );
+
+
+                // ANNOUNCEMENT MESSAGE
+
+                details.appendChild(
+                    createTextElement(
+                        "p",
+                        "",
+                        announcement.content
+                    )
+                );
+
+
+                card.appendChild(dot);
+
+                card.appendChild(details);
+
+                announcementsSection.appendChild(
+                    card
+                );
+
+            }
+        );
+
+    }
+
+
+    // SHOW THE ANNOUNCEMENTS SECTION
+
+    announcementsSection.hidden = false;
+
+
+    const announcementsNavigationLink =
+        dashboard.querySelector(
+            '.parent-navigation a[href="#announcements"]'
+        );
+
+    if (announcementsNavigationLink) {
+
+        announcementsNavigationLink.hidden = false;
+
+    }
+
+}
+
 
         // =====================================
         // REMOVE FICTIONAL INFORMATION
@@ -1450,7 +1679,6 @@ if (progressNavigationLink) {
 
        
 const unfinishedSections = [
-    "announcements",
     "admissions"
 ];
 
