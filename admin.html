@@ -903,6 +903,140 @@
 
 </section>
 
+<!-- =====================================
+     LIVE ATTENDANCE MANAGEMENT
+===================================== -->
+
+<section class="admin-panel" id="attendance-management">
+
+    <div class="panel-heading">
+        <h2>Daily Attendance Register</h2>
+        <span>Live Supabase Database</span>
+    </div>
+
+    <p class="document-note">
+        Record daily learner attendance and publish
+        verified attendance information to parents.
+    </p>
+
+
+    <!-- RECORD ATTENDANCE -->
+
+    <h3>Record Learner Attendance</h3>
+
+    <form id="attendanceForm"
+          class="result-publish-form">
+
+        <label for="attendanceLearner">
+            Select Learner
+        </label>
+
+        <select id="attendanceLearner" required>
+            <option value="">Loading learners...</option>
+        </select>
+
+
+        <label for="attendanceDate">
+            Attendance Date
+        </label>
+
+        <input
+            type="date"
+            id="attendanceDate"
+            required
+        >
+
+
+        <label for="attendanceStatus">
+            Attendance Status
+        </label>
+
+        <select id="attendanceStatus" required>
+            <option value="">Choose attendance status</option>
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+            <option value="Late">Late</option>
+            <option value="Excused">Excused</option>
+        </select>
+
+
+        <label for="attendanceParentNote">
+            Note for Parent (Optional)
+        </label>
+
+        <textarea
+            id="attendanceParentNote"
+            rows="3"
+            maxlength="500"
+            placeholder="Enter a note for the parent or guardian..."
+        ></textarea>
+
+
+        <div class="result-action-buttons">
+
+            <button
+                type="submit"
+                name="attendanceAction"
+                value="draft"
+                class="secondary-button">
+                Save as Draft
+            </button>
+
+            <button
+                type="submit"
+                name="attendanceAction"
+                value="publish">
+                Publish Attendance
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <p
+        id="attendanceMessage"
+        role="status"
+        aria-live="polite">
+    </p>
+
+
+    <!-- ATTENDANCE REGISTER -->
+
+    <hr>
+
+    <h3>Attendance Records</h3>
+
+    <div class="admin-table-container">
+
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>Learner</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Parent Note</th>
+                    <th>Publication</th>
+                </tr>
+            </thead>
+
+            <tbody id="adminAttendanceTableBody">
+
+                <tr>
+                    <td colspan="5">
+                        Loading attendance records...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
 <!-- MANAGE SCHOOL ANNOUNCEMENTS -->
 
 <section class="admin-panel" id="manage-announcements">
