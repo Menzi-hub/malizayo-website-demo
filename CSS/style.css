@@ -2803,4 +2803,8 @@ footer {
     }
 
 }
+/* Hide unfinished Parent Portal navigation links */
 
+.parent-navigation a[hidden] {
+    display: none !important;
+}
