@@ -512,43 +512,214 @@
 
             <!-- LEARNER RECORDS -->
 
-            <section class="admin-panel" id="learners">
+           
+<!-- LIVE LEARNER AND PARENT MANAGEMENT -->
 
-                <div class="panel-heading">
+<section class="admin-panel" id="learners">
 
-                    <h2>Learner Records</h2>
+    <div class="panel-heading">
+        <h2>Learner Management</h2>
+        <span>Live Database</span>
+    </div>
 
-                    <span>Sample Learners</span>
+    <p class="document-note">
+        Register learners and connect them to verified
+        parent or guardian accounts.
+    </p>
 
-                </div>
 
-                <div class="learner-list">
+    <!-- REGISTER LEARNER -->
 
-                    <div class="learner-item">
-                        <strong>Sample Learner A</strong>
-                        <span>Grade 5</span>
-                        <span class="learner-active">Active</span>
-                    </div>
+    <h3>Register a Learner</h3>
 
-                    <div class="learner-item">
-                        <strong>Sample Learner B</strong>
-                        <span>Grade 4</span>
-                        <span class="learner-active">Active</span>
-                    </div>
+    <form id="learnerRegistrationForm"
+          class="result-publish-form">
 
-                    <div class="learner-item">
-                        <strong>Sample Learner C</strong>
-                        <span>Grade 2</span>
-                        <span class="learner-active">Active</span>
-                    </div>
+        <label for="learnerAdmissionNumber">
+            Admission Number
+        </label>
 
-                </div>
+        <input
+            type="text"
+            id="learnerAdmissionNumber"
+            maxlength="40"
+            placeholder="e.g. MPS-2026-0001"
+            required
+        >
 
-                <p class="document-note">
-                    These are fictional records for demonstration.
-                </p>
+        <label for="learnerFullName">
+            Learner Full Name
+        </label>
 
-            </section>
+        <input
+            type="text"
+            id="learnerFullName"
+            maxlength="150"
+            placeholder="Enter learner's full name"
+            required
+        >
+
+        <label for="learnerDateOfBirth">
+            Date of Birth
+        </label>
+
+        <input
+            type="date"
+            id="learnerDateOfBirth"
+            required
+        >
+
+        <label for="learnerGrade">
+            Grade
+        </label>
+
+        <select id="learnerGrade" required>
+            <option value="">Select Grade</option>
+            <option>Grade R</option>
+            <option>Grade 1</option>
+            <option>Grade 2</option>
+            <option>Grade 3</option>
+            <option>Grade 4</option>
+            <option>Grade 5</option>
+            <option>Grade 6</option>
+            <option>Grade 7</option>
+        </select>
+
+        <label for="learnerClass">
+            Class Name
+        </label>
+
+        <input
+            type="text"
+            id="learnerClass"
+            maxlength="50"
+            placeholder="Enter class name"
+        >
+
+        <button type="submit"
+                id="registerLearnerButton">
+            Register Learner
+        </button>
+
+    </form>
+
+    <p id="learnerRegistrationMessage"
+       role="status"
+       aria-live="polite"></p>
+
+
+    <!-- LINK PARENT TO LEARNER -->
+
+    <hr>
+
+    <h3>Link Parent to Learner</h3>
+
+    <form id="parentLearnerLinkForm"
+          class="result-publish-form">
+
+        <label for="linkParentSelect">
+            Select Parent / Guardian
+        </label>
+
+        <select id="linkParentSelect" required>
+            <option value="">Loading parent accounts...</option>
+        </select>
+
+        <label for="linkLearnerSelect">
+            Select Learner
+        </label>
+
+        <select id="linkLearnerSelect" required>
+            <option value="">Loading learner records...</option>
+        </select>
+
+        <label for="linkRelationship">
+            Relationship to Learner
+        </label>
+
+        <select id="linkRelationship" required>
+            <option value="">Choose relationship</option>
+            <option>Mother</option>
+            <option>Father</option>
+            <option>Legal Guardian</option>
+            <option>Other</option>
+        </select>
+
+        <button type="submit"
+                id="linkLearnerButton">
+            Link Parent and Learner
+        </button>
+
+    </form>
+
+    <p id="parentLearnerLinkMessage"
+       role="status"
+       aria-live="polite"></p>
+
+
+    <!-- REGISTERED LEARNERS -->
+
+    <hr>
+
+    <h3>Registered Learners</h3>
+
+    <div class="admin-table-container">
+
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>Admission Number</th>
+                    <th>Learner</th>
+                    <th>Grade</th>
+                    <th>Class</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="adminLearnersTableBody">
+                <tr>
+                    <td colspan="5">
+                        Loading learner records...
+                    </td>
+                </tr>
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- PARENT-LEARNER RELATIONSHIPS -->
+
+    <h3>Linked Parents and Learners</h3>
+
+    <div class="admin-table-container">
+
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>Parent / Guardian</th>
+                    <th>Learner</th>
+                    <th>Relationship</th>
+                </tr>
+            </thead>
+
+            <tbody id="adminParentLinksTableBody">
+                <tr>
+                    <td colspan="3">
+                        Loading parent relationships...
+                    </td>
+                </tr>
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
 
 <!-- PUBLISH LEARNER RESULTS -->
 
