@@ -355,6 +355,43 @@ if (attendanceError) {
     throw attendanceError;
 }
 
+// =====================================
+// LOAD PUBLISHED TERM REPORTS
+// ONLY FOR THE PARENT'S LINKED LEARNERS
+// =====================================
+
+const {
+    data: termReports,
+    error: termReportsError
+} = await db
+    .from("term_reports")
+    .select(`
+        id,
+        learner_id,
+        academic_year,
+        term,
+        report_title,
+        original_file_name,
+        created_at
+    `)
+    .in("learner_id", learnerIds)
+    .eq("is_published", true)
+    .order("academic_year", {
+        ascending: false
+    })
+    .order("term", {
+        ascending: false
+    });
+
+if (termReportsError) {
+
+    console.error(
+        "Term reports could not be loaded:",
+        termReportsError
+    );
+
+}
+
         learnerSection.replaceChildren();
 
 
@@ -710,6 +747,387 @@ if (attendanceNavigationLink) {
     attendanceNavigationLink.hidden = false;
 }
 
+// =====================================
+// DISPLAY PRIVATE TERM REPORTS
+// =====================================
+
+const reportsSection =
+    document.getElementById("reports");
+
+if (!reportsSection) {
+
+    throw new Error(
+        "Term reports section could not be found."
+    );
+
+}
+
+reportsSection.replaceChildren();
+
+
+// SECTION HEADING
+
+const reportsHeading =
+    createTextElement(
+        "div",
+        "parent-panel-heading",
+        ""
+    );
+
+reportsHeading.appendChild(
+    createTextElement(
+        "h2",
+        "",
+        "My Term Reports"
+    )
+);
+
+reportsHeading.appendChild(
+    createTextElement(
+        "span",
+        "",
+        "Published School Reports"
+    )
+);
+
+reportsSection.appendChild(reportsHeading);
+
+
+// LEARNER NAME LOOKUP
+
+const reportLearnerMap = new Map(
+    learners.map(learner => [
+        learner.id,
+        learner.full_name
+    ])
+);
+
+
+// HANDLE REPORT LOADING FAILURE
+
+if (termReportsError) {
+
+    reportsSection.appendChild(
+        createTextElement(
+            "p",
+            "parent-message",
+            "Term reports are temporarily unavailable. Please contact the school."
+        )
+    );
+
+}
+
+
+// HANDLE NO PUBLISHED REPORTS
+
+else if (
+    !termReports ||
+    termReports.length === 0
+) {
+
+    reportsSection.appendChild(
+        createTextElement(
+            "p",
+            "document-note",
+            "No term reports have been published for your linked learners yet."
+        )
+    );
+
+}
+
+
+// DISPLAY EACH REPORT
+
+else {
+
+    termReports.forEach(function (report) {
+
+        const reportCard =
+            createTextElement(
+                "div",
+                "report-card",
+                ""
+            );
+
+
+        // REPORT DETAILS
+
+        const details =
+            document.createElement("div");
+
+
+        details.appendChild(
+            createTextElement(
+                "h3",
+                "",
+                report.report_title
+            )
+        );
+
+        details.appendChild(
+            createTextElement(
+                "p",
+                "",
+                "Learner: " +
+                    (
+                        reportLearnerMap.get(
+                            report.learner_id
+                        ) || "Linked Learner"
+                    )
+            )
+        );
+
+        details.appendChild(
+            createTextElement(
+                "p",
+                "",
+                "Academic Year: " +
+                    report.academic_year
+            )
+        );
+
+        details.appendChild(
+            createTextElement(
+                "p",
+                "",
+                "Term " + report.term
+            )
+        );
+
+        details.appendChild(
+            createTextElement(
+                "p",
+                "",
+                "PDF: " +
+                    report.original_file_name
+            )
+        );
+
+
+        // DOWNLOAD STATUS MESSAGE
+
+        const downloadMessage =
+            createTextElement(
+                "p",
+                "parent-message",
+                ""
+            );
+
+
+        // SECURE DOWNLOAD BUTTON
+
+        const downloadButton =
+            createTextElement(
+                "button",
+                "parent-button",
+                "Download PDF"
+            );
+
+        downloadButton.type = "button";
+
+
+        downloadButton.addEventListener(
+            "click",
+            async function () {
+
+                if (downloadButton.disabled) {
+                    return;
+                }
+
+
+                // OPEN WINDOW DURING THE USER'S CLICK
+                // TO REDUCE POP-UP BLOCKING.
+
+                const downloadWindow =
+                    window.open("about:blank", "_blank");
+
+                if (downloadWindow) {
+                    downloadWindow.opener = null;
+                }
+
+
+                downloadButton.disabled = true;
+
+                downloadButton.textContent =
+                    "Preparing Download...";
+
+                downloadMessage.textContent =
+                    "Verifying your access and preparing the secure report link...";
+
+
+                try {
+
+                    // REQUEST A SERVER-VERIFIED DOWNLOAD
+
+                    const {
+                        data,
+                        error
+                    } = await db.functions.invoke(
+                        "get-parent-term-report",
+                        {
+                            body: {
+                                reportId: report.id
+                            }
+                        }
+                    );
+
+
+                    if (error) {
+
+                        let serverMessage =
+                            error.message ||
+                            "Unable to download report.";
+
+                        try {
+
+                            const response =
+                                error.context;
+
+                            if (
+                                response &&
+                                typeof response.clone === "function"
+                            ) {
+
+                                const errorBody =
+                                    await response.clone().json();
+
+                                if (errorBody.error) {
+                                    serverMessage =
+                                        errorBody.error;
+                                }
+
+                            }
+
+                        } catch (parseError) {
+
+                            console.warn(
+                                "Could not read server error details.",
+                                parseError
+                            );
+
+                        }
+
+                        throw new Error(serverMessage);
+
+                    }
+
+
+                    // VERIFY FUNCTION RESPONSE
+
+                    if (
+                        !data ||
+                        data.success !== true ||
+                        typeof data.signedUrl !== "string"
+                    ) {
+
+                        throw new Error(
+                            "The secure download link could not be created."
+                        );
+
+                    }
+
+
+                    // OPEN TEMPORARY SIGNED DOWNLOAD
+
+                    if (
+                        downloadWindow &&
+                        !downloadWindow.closed
+                    ) {
+
+                        downloadWindow.location.href =
+                            data.signedUrl;
+
+                        downloadMessage.textContent =
+                            "Your secure report download is opening. The link expires in 2 minutes.";
+
+                    } else {
+
+                        // FALLBACK IF THE BROWSER BLOCKS
+                        // THE NEW WINDOW.
+
+                        const secureLink =
+                            document.createElement("a");
+
+                        secureLink.href =
+                            data.signedUrl;
+
+                        secureLink.target = "_blank";
+
+                        secureLink.rel =
+                            "noopener noreferrer";
+
+                        secureLink.textContent =
+                            "Open secure PDF download (expires in 2 minutes)";
+
+                        downloadMessage.replaceChildren(
+                            secureLink
+                        );
+
+                    }
+
+
+                } catch (error) {
+
+                    if (
+                        downloadWindow &&
+                        !downloadWindow.closed
+                    ) {
+
+                        downloadWindow.close();
+
+                    }
+
+                    console.error(
+                        "Secure report download failed:",
+                        error
+                    );
+
+                    downloadMessage.textContent =
+                        error.message ||
+                        "Unable to download this report. Please contact the school.";
+
+
+                } finally {
+
+                    downloadButton.disabled = false;
+
+                    downloadButton.textContent =
+                        "Download PDF";
+
+                }
+
+            }
+        );
+
+
+        // ADD ELEMENTS TO REPORT CARD
+
+        reportCard.appendChild(details);
+
+        reportCard.appendChild(downloadButton);
+
+        reportCard.appendChild(downloadMessage);
+
+        reportsSection.appendChild(reportCard);
+
+    });
+
+}
+
+
+// SHOW REPORTS SECTION
+
+reportsSection.hidden = false;
+
+
+const reportsNavigationLink =
+    dashboard.querySelector(
+        '.parent-navigation a[href="#reports"]'
+    );
+
+if (reportsNavigationLink) {
+    reportsNavigationLink.hidden = false;
+}
 
 // =====================================
 // DISPLAY LIVE ACADEMIC RESULTS
@@ -1032,7 +1450,6 @@ if (progressNavigationLink) {
 
        
 const unfinishedSections = [
-    "reports",
     "announcements",
     "admissions"
 ];
