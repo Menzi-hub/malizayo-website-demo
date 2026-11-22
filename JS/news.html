@@ -76,71 +76,21 @@
 
         <h2>Latest School Updates</h2>
 
-        <div class="news-grid">
+        <div
+    class="news-grid"
+    id="publicAnnouncementsGrid">
 
-            <article class="news-card">
+    <article class="news-card">
+        <p>Loading school announcements...</p>
+    </article>
 
-                <span class="news-category">
-                    SCHOOL NOTICE
-                </span>
+</div>
 
-                <h3>Important School Announcements</h3>
-
-                <p>
-                    Important notices and information
-                    from the school will be published
-                    in this section.
-                </p>
-
-                <p class="demo-label">
-                    Demonstration notice
-                </p>
-
-            </article>
-
-
-            <article class="news-card">
-
-                <span class="news-category">
-                    ACADEMICS
-                </span>
-
-                <h3>Teaching and Learning Updates</h3>
-
-                <p>
-                    Updates about teaching activities,
-                    assessments and academic programmes
-                    will be shared here.
-                </p>
-
-                <p class="demo-label">
-                    Demonstration notice
-                </p>
-
-            </article>
-
-
-            <article class="news-card">
-
-                <span class="news-category">
-                    SCHOOL EVENTS
-                </span>
-
-                <h3>Upcoming School Activities</h3>
-
-                <p>
-                    Information about school events,
-                    meetings and activities will be
-                    published here.
-                </p>
-
-                <p class="demo-label">
-                    Demonstration notice
-                </p>
-
-            </article>
-
-        </div>
+<p
+    id="publicAnnouncementsStatus"
+    role="status"
+    aria-live="polite">
+</p>
 
     </main>
 
@@ -160,8 +110,20 @@
 
     </footer>
 
+<!-- SUPABASE CONNECTION -->
 
-    <script src="JS/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="JS/supabase-client.js"></script>
+
+<!-- EXISTING WEBSITE JAVASCRIPT -->
+
+<script src="JS/script.js"></script>
+
+<!-- LIVE SCHOOL ANNOUNCEMENTS -->
+
+<script src="JS/news-announcements.js"></script>
+  
 
 </body>
 </html>
