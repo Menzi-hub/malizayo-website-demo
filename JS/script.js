@@ -400,7 +400,8 @@ admissionForm.addEventListener(
                 signature_name:
                     document.getElementById("signatureName").value.trim(),
 
-                declaration_accepted: true
+                declaration_accepted:
+    document.getElementById("declaration").checked
 
             };
 
