@@ -546,7 +546,31 @@
             placeholder="e.g. MPS-2026-0001"
             required
         >
+<!-- AUTOMATIC ADMISSION YEAR -->
 
+<div id="admissionYearField" hidden>
+
+    <label for="learnerAdmissionYear">
+        Admission Year
+    </label>
+
+    <input
+        type="number"
+        id="learnerAdmissionYear"
+        min="2000"
+        max="2100"
+        value="2027"
+        disabled
+        required
+    >
+
+    <p class="document-note">
+        Select the year in which the learner will officially
+        be admitted. The admission number will be generated
+        automatically.
+    </p>
+
+</div>
         <label for="learnerFullName">
             Learner Full Name
         </label>

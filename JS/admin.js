@@ -7,7 +7,7 @@
 
 (function () {
 
-   
+
 /* =====================================
    LIVE ADMISSIONS ELEMENTS
 ===================================== */
@@ -154,7 +154,7 @@ if (closeAdmissionDetails) {
     }
 
 
- 
+
 
 
 
@@ -186,7 +186,7 @@ const adminAnnouncementList =
 
 
 const sharedSupabase = window.malizayoSupabase;
-   
+
 /* =====================================
    PARENT ACCOUNT REGISTRATION
    CONNECT TO INVITE-PARENT FUNCTION
@@ -1432,8 +1432,8 @@ async function loadAdminApplications() {
             await sharedSupabase
                 .from("admissions")
                 .select(
-                    "id, learner_name, date_of_birth, grade_applying_for, previous_school, parent_guardian_name, relationship_to_learner, parent_phone, parent_email, residential_address, signature_name, declaration_accepted, birth_certificate_path, parent_id_path, proof_residence_path, previous_report_path, signature_path, status, submitted_at"
-                )
+    "id, learner_name, date_of_birth, grade_applying_for, previous_school, parent_guardian_name, relationship_to_learner, parent_phone, parent_email, residential_address, signature_name, declaration_accepted, birth_certificate_path, parent_id_path, proof_residence_path, previous_report_path, signature_path, status, submitted_at, registered_learner_id, registered_at"
+)
                 .order("submitted_at", {
                     ascending: false
                 });
@@ -1635,19 +1635,96 @@ async function loadAdminApplications() {
             );
 
 
-            actionsCell.appendChild(viewButton);
-            actionsCell.appendChild(statusSelect);
-            actionsCell.appendChild(updateButton);
+           // DOWNLOAD COMPLETED ADMISSION FORM
 
-            row.appendChild(actionsCell);
+const downloadPdfButton =
+    document.createElement("button");
 
-                    admissionsTableBody.appendChild(row);
+downloadPdfButton.type = "button";
 
-        });
+downloadPdfButton.textContent = "Download PDF";
 
-        // APPLY SEARCH AND FILTERS AFTER LOADING
+downloadPdfButton.addEventListener(
+    "click",
+    function () {
+        downloadAdmissionApplicationPdf(
+            application,
+            downloadPdfButton
+        );
+    }
+);
 
-        applyAdmissionsFilters();
+
+// ADD ACTIONS TO TABLE
+
+// ADD EXISTING ACTIONS
+
+actionsCell.appendChild(viewButton);
+actionsCell.appendChild(statusSelect);
+actionsCell.appendChild(updateButton);
+actionsCell.appendChild(downloadPdfButton);
+
+
+// REGISTER APPROVED APPLICATION
+
+if (application.status === "Approved") {
+
+    const registerLearnerButton =
+        document.createElement("button");
+
+    registerLearnerButton.type = "button";
+
+    if (application.registered_learner_id) {
+
+        registerLearnerButton.textContent =
+            "Learner Registered";
+
+        registerLearnerButton.disabled = true;
+
+    } else {
+
+        registerLearnerButton.textContent =
+            "Register Learner";
+
+        registerLearnerButton.addEventListener(
+            "click",
+            function () {
+
+                window.dispatchEvent(
+                    new CustomEvent(
+                        "malizayo:register-approved-admission",
+                        {
+                            detail: {
+                                application: application
+                            }
+                        }
+                    )
+                );
+
+            }
+        );
+
+    }
+
+    actionsCell.appendChild(registerLearnerButton);
+
+}
+
+
+// APPEND ROW
+// APPEND ROW
+
+row.appendChild(actionsCell);
+
+admissionsTableBody.appendChild(row);
+
+// CLOSE APPLICATIONS LOOP
+});
+
+
+// APPLY SEARCH AND FILTERS AFTER LOADING
+
+applyAdmissionsFilters();
 
     } catch (error) {
 
@@ -1813,6 +1890,503 @@ async function viewAdminApplication(application) {
 }
 
 
+/* =========================================
+   DOWNLOAD COMPLETED ADMISSION APPLICATION
+========================================= */
+
+// Safely display information inside HTML
+function escapeAdmissionPdfText(value) {
+
+    const text =
+        value === null ||
+        value === undefined ||
+        value === ""
+            ? "Not provided"
+            : String(value);
+
+    return text.replace(/[&<>"']/g, function (character) {
+
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[character];
+
+    });
+
+}
+
+
+// Generate and print the admission form
+async function downloadAdmissionApplicationPdf(
+    application,
+    button
+) {
+
+    // Open the print window immediately from the button click
+    const printWindow = window.open("", "_blank");
+
+    if (!printWindow) {
+
+        if (adminNotice) {
+            adminNotice.textContent =
+                "Please allow pop-ups to download the admission PDF.";
+        }
+
+        return;
+    }
+
+
+    button.disabled = true;
+    button.textContent = "Preparing PDF...";
+
+
+    try {
+
+        // APPLICATION REFERENCE
+
+        const reference =
+            "MPS-" +
+            application.id.slice(0, 8).toUpperCase();
+
+
+        // DATE SUBMITTED
+
+        const submittedDate =
+            application.submitted_at
+                ? new Date(
+                    application.submitted_at
+                ).toLocaleString("en-ZA")
+                : "Not provided";
+
+
+        // GET PRIVATE SIGNATURE IMAGE
+
+        let signatureUrl = "";
+
+        if (application.signature_path) {
+
+            const { data, error } =
+                await sharedSupabase.storage
+                    .from(admissionsBucket)
+                    .createSignedUrl(
+                        application.signature_path,
+                        300
+                    );
+
+            if (error) {
+                throw error;
+            }
+
+            signatureUrl = data.signedUrl;
+
+        }
+
+
+        // SIGNATURE DISPLAY
+
+        const signatureMarkup = signatureUrl
+            ? `
+                <div class="signature-image">
+                    <img
+                        id="parentSignature"
+                        src="${escapeAdmissionPdfText(signatureUrl)}"
+                        alt="Parent or guardian signature"
+                    >
+                </div>
+            `
+            : `
+                <p>No signature image uploaded.</p>
+            `;
+
+
+        // CREATE PDF DOCUMENT CONTENT
+
+        const html = `
+
+        <!DOCTYPE html>
+
+        <html lang="en">
+
+        <head>
+
+            <meta charset="UTF-8">
+
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+            <title>${reference}-Admission-Application</title>
+
+            <style>
+
+                @page {
+                    size: A4;
+                    margin: 18mm;
+                }
+
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    font-family: Arial, sans-serif;
+                    color: #222;
+                    font-size: 12px;
+                    line-height: 1.5;
+                }
+
+                .school-header {
+                    text-align: center;
+                    border-bottom: 3px solid #173B5C;
+                    padding-bottom: 15px;
+                    margin-bottom: 20px;
+                }
+
+                .school-header h1 {
+                    color: #173B5C;
+                    font-size: 22px;
+                    margin: 0;
+                }
+
+                .school-header p {
+                    margin: 4px 0;
+                }
+
+                .document-title {
+                    text-align: center;
+                    margin: 20px 0;
+                }
+
+                .document-title h2 {
+                    color: #173B5C;
+                    font-size: 17px;
+                }
+
+                .reference {
+                    font-weight: bold;
+                    font-size: 13px;
+                }
+
+                .section {
+                    margin-top: 20px;
+                    page-break-inside: avoid;
+                }
+
+                .section h3 {
+                    background: #173B5C;
+                    color: white;
+                    padding: 9px;
+                    font-size: 13px;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                td {
+                    border: 1px solid #ccc;
+                    padding: 9px;
+                    vertical-align: top;
+                }
+
+                td:first-child {
+                    width: 35%;
+                    font-weight: bold;
+                    background: #f3f5f7;
+                }
+
+                .declaration {
+                    margin-top: 20px;
+                    padding: 12px;
+                    border: 1px solid #ccc;
+                }
+
+                .signature-image {
+                    margin-top: 10px;
+                }
+
+                .signature-image img {
+                    max-width: 220px;
+                    max-height: 85px;
+                    object-fit: contain;
+                }
+
+                .signature-line {
+                    border-bottom: 1px solid #333;
+                    width: 250px;
+                    margin-top: 30px;
+                }
+
+                .footer {
+                    margin-top: 30px;
+                    padding-top: 10px;
+                    border-top: 1px solid #ccc;
+                    text-align: center;
+                    color: #555;
+                    font-size: 10px;
+                }
+
+                @media print {
+
+                    body {
+                        print-color-adjust: exact;
+                        -webkit-print-color-adjust: exact;
+                    }
+
+                }
+
+            </style>
+
+        </head>
+
+        <body>
+
+            <div class="school-header">
+
+                <h1>Malizayo Primary School</h1>
+
+                <p>Official Learner Admission Application</p>
+
+                <p>Mid Illovo, KwaZulu-Natal</p>
+
+            </div>
+
+
+            <div class="document-title">
+
+                <h2>COMPLETED ADMISSION APPLICATION FORM</h2>
+
+                <p class="reference">
+                    Reference: ${escapeAdmissionPdfText(reference)}
+                </p>
+
+            </div>
+
+
+            <div class="section">
+
+                <h3>SECTION A: LEARNER INFORMATION</h3>
+
+                <table>
+
+                    <tr>
+                        <td>Full Name</td>
+                        <td>${escapeAdmissionPdfText(application.learner_name)}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Date of Birth</td>
+                        <td>${escapeAdmissionPdfText(application.date_of_birth)}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Grade Applying For</td>
+                        <td>${escapeAdmissionPdfText(application.grade_applying_for)}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Previous School</td>
+                        <td>${escapeAdmissionPdfText(application.previous_school)}</td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+
+            <div class="section">
+
+                <h3>SECTION B: PARENT / GUARDIAN INFORMATION</h3>
+
+                <table>
+
+                    <tr>
+                        <td>Parent / Guardian Name</td>
+                        <td>${escapeAdmissionPdfText(application.parent_guardian_name)}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Relationship to Learner</td>
+                        <td>${escapeAdmissionPdfText(application.relationship_to_learner)}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Contact Number</td>
+                        <td>${escapeAdmissionPdfText(application.parent_phone)}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Email Address</td>
+                        <td>${escapeAdmissionPdfText(application.parent_email)}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Residential Address</td>
+                        <td>${escapeAdmissionPdfText(application.residential_address)}</td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+
+            <div class="section">
+
+                <h3>SECTION C: DECLARATION AND SIGNATURE</h3>
+
+                <div class="declaration">
+
+                    <p>
+                        Declaration accepted:
+                        <strong>
+                            ${
+                                application.declaration_accepted
+                                    ? "YES"
+                                    : "NOT CONFIRMED"
+                            }
+                        </strong>
+                    </p>
+
+                    <p>
+                        Name of person signing:
+                        <strong>
+                            ${escapeAdmissionPdfText(application.signature_name)}
+                        </strong>
+                    </p>
+
+                    <p>Parent / Guardian Signature:</p>
+
+                    ${signatureMarkup}
+
+                    <div class="signature-line"></div>
+
+                </div>
+
+            </div>
+
+
+            <div class="section">
+
+                <h3>SECTION D: ADMINISTRATIVE INFORMATION</h3>
+
+                <table>
+
+                    <tr>
+                        <td>Application Status</td>
+                        <td>${escapeAdmissionPdfText(application.status)}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Date Submitted</td>
+                        <td>${escapeAdmissionPdfText(submittedDate)}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Application Reference</td>
+                        <td>${escapeAdmissionPdfText(reference)}</td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+
+            <div class="footer">
+
+                Malizayo Primary School
+
+                <br>
+
+                Digitally generated copy of the information submitted
+                through the school's admissions system.
+
+            </div>
+
+        </body>
+
+        </html>
+
+        `;
+
+
+        // WRITE DOCUMENT TO THE PRINT WINDOW
+
+        printWindow.document.open();
+
+        printWindow.document.write(html);
+
+        printWindow.document.close();
+
+
+        // WAIT FOR THE SIGNATURE IMAGE TO LOAD
+
+        const signatureImage =
+            printWindow.document.getElementById(
+                "parentSignature"
+            );
+
+        if (signatureImage) {
+
+            await new Promise(function (resolve) {
+
+                if (signatureImage.complete) {
+                    resolve();
+                    return;
+                }
+
+                signatureImage.onload = resolve;
+                signatureImage.onerror = resolve;
+
+                setTimeout(resolve, 5000);
+
+            });
+
+        }
+
+
+        // OPEN PRINT DIALOG
+
+        printWindow.focus();
+
+        printWindow.print();
+
+
+        if (adminNotice) {
+
+            adminNotice.textContent =
+                "Admission PDF prepared successfully. Choose Save as PDF to download.";
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Admission PDF generation failed:",
+            error
+        );
+
+        printWindow.close();
+
+        if (adminNotice) {
+
+            adminNotice.textContent =
+                "Unable to generate admission PDF: " +
+                error.message;
+
+        }
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = "Download PDF";
+
+    }
+
+}
+
 // UPDATE APPLICATION STATUS
 
 async function updateAdminApplicationStatus(
@@ -1889,7 +2463,45 @@ async function updateAdminApplicationStatus(
     }
 
 }
+// =====================================
+// REFRESH ADMISSIONS AFTER REGISTRATION
+// =====================================
 
+window.addEventListener(
+    "malizayo:admission-registered",
+    async function (event) {
+
+        try {
+
+            await loadAdminApplications();
+
+            if (adminNotice) {
+
+                const admissionNumber =
+                    event.detail?.admissionNumber || "";
+
+                adminNotice.textContent =
+                    "Learner successfully registered. Admission number: " +
+                    admissionNumber;
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Admissions refresh failed:",
+                error
+            );
+
+            if (adminNotice) {
+                adminNotice.textContent =
+                    "Learner registered, but the admissions list could not refresh. Please reload the page.";
+            }
+
+        }
+
+    }
+);
 
 // LOAD ANNOUNCEMENTS WHEN ADMIN SESSION IS AVAILABLE
 
@@ -1967,706 +2579,3 @@ if (sharedSupabase) {
 }
 
 })();
-
-/* =========================================
-   MALIZAYO PRIMARY SCHOOL
-   LIVE LEARNER MANAGEMENT
-   PARENT-LEARNER LINKING
-========================================= */
-
-(function initializeLearnerManagement() {
-
-    const MPS_ADMIN_ID =
-        "a955d9d9-e91f-4fd9-b1e7-d015af08ae04";
-
-    const learnerForm =
-        document.getElementById("learnerRegistrationForm");
-
-    const parentLinkForm =
-        document.getElementById("parentLearnerLinkForm");
-
-    const learnerMessage =
-        document.getElementById("learnerRegistrationMessage");
-
-    const linkMessage =
-        document.getElementById("parentLearnerLinkMessage");
-
-    const learnersTable =
-        document.getElementById("adminLearnersTableBody");
-
-    const linksTable =
-        document.getElementById("adminParentLinksTableBody");
-
-    const parentSelect =
-        document.getElementById("linkParentSelect");
-
-    const learnerSelect =
-        document.getElementById("linkLearnerSelect");
-
-    const registerButton =
-        document.getElementById("registerLearnerButton");
-
-    const linkButton =
-        document.getElementById("linkLearnerButton");
-
-
-    // CHECK PAGE AND SUPABASE CONNECTION
-
-    if (
-        !learnerForm ||
-        !parentLinkForm ||
-        !sharedSupabase
-    ) {
-        return;
-    }
-
-
-    // DISPLAY MESSAGES SAFELY
-
-    function setMessage(element, message, success) {
-
-        if (!element) return;
-
-        element.textContent = message;
-
-        element.style.color = success
-            ? "#216638"
-            : "#922E26";
-
-    }
-
-
-    // VERIFY AUTHORISED ADMINISTRATOR
-
-    async function requireSchoolAdmin() {
-
-        const {
-            data,
-            error
-        } = await sharedSupabase.auth.getUser();
-
-        if (
-            error ||
-            !data.user ||
-            data.user.id !== MPS_ADMIN_ID
-        ) {
-
-            throw new Error(
-                "Only the authorised school administrator can manage learner records."
-            );
-
-        }
-
-        return data.user;
-
-    }
-
-
-    // SAFELY CREATE TABLE CELLS
-
-    function addCell(row, value) {
-
-        const cell =
-            document.createElement("td");
-
-        cell.textContent =
-            value === null || value === undefined
-                ? "-"
-                : String(value);
-
-        row.appendChild(cell);
-
-    }
-
-
-    // CREATE SELECT OPTIONS
-
-    function addOption(select, value, label) {
-
-        const option =
-            document.createElement("option");
-
-        option.value = value;
-
-        option.textContent = label;
-
-        select.appendChild(option);
-
-    }
-
-
-    // DISPLAY REGISTERED LEARNERS
-
-    function renderLearners(learners) {
-
-        learnersTable.replaceChildren();
-
-        if (learners.length === 0) {
-
-            const row =
-                document.createElement("tr");
-
-            const cell =
-                document.createElement("td");
-
-            cell.colSpan = 5;
-
-            cell.textContent =
-                "No learner records have been registered yet.";
-
-            row.appendChild(cell);
-
-            learnersTable.appendChild(row);
-
-            return;
-
-        }
-
-
-        learners.forEach(function (learner) {
-
-            const row =
-                document.createElement("tr");
-
-            addCell(row, learner.admission_number);
-            addCell(row, learner.full_name);
-            addCell(row, learner.grade);
-            addCell(row, learner.class_name || "-");
-            addCell(row, learner.learner_status);
-
-            learnersTable.appendChild(row);
-
-        });
-
-    }
-
-
-    // DISPLAY PARENT-LEARNER LINKS
-
-    function renderParentLinks(
-        links,
-        parents,
-        learners
-    ) {
-
-        linksTable.replaceChildren();
-
-        const parentMap = new Map(
-            parents.map(parent => [
-                parent.user_id,
-                parent
-            ])
-        );
-
-        const learnerMap = new Map(
-            learners.map(learner => [
-                learner.id,
-                learner
-            ])
-        );
-
-
-        if (links.length === 0) {
-
-            const row =
-                document.createElement("tr");
-
-            const cell =
-                document.createElement("td");
-
-            cell.colSpan = 3;
-
-            cell.textContent =
-                "No parent-learner relationships have been created yet.";
-
-            row.appendChild(cell);
-
-            linksTable.appendChild(row);
-
-            return;
-
-        }
-
-
-        links.forEach(function (link) {
-
-            const parent =
-                parentMap.get(link.parent_user_id);
-
-            const learner =
-                learnerMap.get(link.learner_id);
-
-            const row =
-                document.createElement("tr");
-
-            addCell(
-                row,
-                parent
-                    ? parent.full_name + " (" + parent.email + ")"
-                    : "Parent profile unavailable"
-            );
-
-            addCell(
-                row,
-                learner
-                    ? learner.full_name
-                    : "Learner unavailable"
-            );
-
-            addCell(
-                row,
-                link.relationship_to_learner
-            );
-
-            linksTable.appendChild(row);
-
-        });
-
-    }
-
-
-    // LOAD PARENTS AND LEARNERS
-
-    async function loadLearnerManagement() {
-
-        const [
-            parentsResult,
-            learnersResult,
-            linksResult
-        ] = await Promise.all([
-
-            sharedSupabase
-                .from("parent_profiles")
-                .select("user_id, full_name, email")
-                .order("full_name"),
-
-            sharedSupabase
-                .from("learners")
-                .select(
-                    "id, admission_number, full_name, grade, class_name, learner_status"
-                )
-                .order("full_name"),
-
-            sharedSupabase
-                .from("parent_learners")
-                .select(
-                    "parent_user_id, learner_id, relationship_to_learner"
-                )
-
-        ]);
-
-
-        if (parentsResult.error) {
-            throw parentsResult.error;
-        }
-
-        if (learnersResult.error) {
-            throw learnersResult.error;
-        }
-
-        if (linksResult.error) {
-            throw linksResult.error;
-        }
-
-
-        const parents =
-            parentsResult.data || [];
-
-        const learners =
-            learnersResult.data || [];
-
-        const links =
-            linksResult.data || [];
-
-
-        // POPULATE PARENT SELECT
-
-        parentSelect.replaceChildren();
-
-        addOption(
-            parentSelect,
-            "",
-            "Select a parent or guardian"
-        );
-
-        parents.forEach(function (parent) {
-
-            addOption(
-                parentSelect,
-                parent.user_id,
-                parent.full_name + " — " + parent.email
-            );
-
-        });
-
-
-        // POPULATE LEARNER SELECT
-
-        learnerSelect.replaceChildren();
-
-        addOption(
-            learnerSelect,
-            "",
-            "Select a learner"
-        );
-
-        learners.forEach(function (learner) {
-
-            addOption(
-                learnerSelect,
-                learner.id,
-                learner.admission_number +
-                    " — " +
-                    learner.full_name +
-                    " (" +
-                    learner.grade +
-                    ")"
-            );
-
-        });
-
-
-        // DISPLAY TABLES
-
-        renderLearners(learners);
-
-        renderParentLinks(
-            links,
-            parents,
-            learners
-        );
-
-    }
-
-
-    // =====================================
-    // REGISTER A LEARNER
-    // =====================================
-
-    learnerForm.addEventListener(
-        "submit",
-        async function (event) {
-
-            event.preventDefault();
-
-            registerButton.disabled = true;
-
-            registerButton.textContent =
-                "Registering...";
-
-
-            try {
-
-                await requireSchoolAdmin();
-
-                const admissionNumber =
-                    document.getElementById(
-                        "learnerAdmissionNumber"
-                    ).value.trim();
-
-                const fullName =
-                    document.getElementById(
-                        "learnerFullName"
-                    ).value.trim();
-
-                const dateOfBirth =
-                    document.getElementById(
-                        "learnerDateOfBirth"
-                    ).value;
-
-                const grade =
-                    document.getElementById(
-                        "learnerGrade"
-                    ).value;
-
-                const className =
-                    document.getElementById(
-                        "learnerClass"
-                    ).value.trim();
-
-
-                if (
-                    !admissionNumber ||
-                    !fullName ||
-                    !dateOfBirth ||
-                    !grade
-                ) {
-
-                    throw new Error(
-                        "Please complete all required learner information."
-                    );
-
-                }
-
-
-                const today =
-                    new Date().toISOString().slice(0, 10);
-
-                if (dateOfBirth > today) {
-
-                    throw new Error(
-                        "The learner's date of birth cannot be in the future."
-                    );
-
-                }
-
-
-                setMessage(
-                    learnerMessage,
-                    "Saving learner record...",
-                    true
-                );
-
-
-                const {
-                    error
-                } = await sharedSupabase
-                    .from("learners")
-                    .insert({
-
-                        admission_number:
-                            admissionNumber,
-
-                        full_name:
-                            fullName,
-
-                        date_of_birth:
-                            dateOfBirth,
-
-                        grade:
-                            grade,
-
-                        class_name:
-                            className || null,
-
-                        learner_status:
-                            "Active"
-
-                    });
-
-
-                if (error) {
-
-                    if (error.code === "23505") {
-
-                        throw new Error(
-                            "This admission number is already registered."
-                        );
-
-                    }
-
-                    throw error;
-
-                }
-
-
-                learnerForm.reset();
-
-                setMessage(
-                    learnerMessage,
-                    "Learner registered successfully.",
-                    true
-                );
-
-                await loadLearnerManagement();
-
-
-            } catch (error) {
-
-                console.error(
-                    "Learner registration failed:",
-                    error
-                );
-
-                setMessage(
-                    learnerMessage,
-                    error.message ||
-                        "Unable to register learner.",
-                    false
-                );
-
-            } finally {
-
-                registerButton.disabled = false;
-
-                registerButton.textContent =
-                    "Register Learner";
-
-            }
-
-        }
-    );
-
-
-    // =====================================
-    // LINK PARENT TO LEARNER
-    // =====================================
-
-    parentLinkForm.addEventListener(
-        "submit",
-        async function (event) {
-
-            event.preventDefault();
-
-            linkButton.disabled = true;
-
-            linkButton.textContent =
-                "Creating relationship...";
-
-
-            try {
-
-                const admin =
-                    await requireSchoolAdmin();
-
-                const parentUserId =
-                    parentSelect.value;
-
-                const learnerId =
-                    learnerSelect.value;
-
-                const relationship =
-                    document.getElementById(
-                        "linkRelationship"
-                    ).value;
-
-
-                if (
-                    !parentUserId ||
-                    !learnerId ||
-                    !relationship
-                ) {
-
-                    throw new Error(
-                        "Please select a parent, learner and relationship."
-                    );
-
-                }
-
-
-                setMessage(
-                    linkMessage,
-                    "Verifying parent and learner records...",
-                    true
-                );
-
-
-                // INSERT THE AUTHORISED RELATIONSHIP
-
-                const {
-                    error
-                } = await sharedSupabase
-                    .from("parent_learners")
-                    .insert({
-
-                        parent_user_id:
-                            parentUserId,
-
-                        learner_id:
-                            learnerId,
-
-                        relationship_to_learner:
-                            relationship,
-
-                        linked_by:
-                            admin.id
-
-                    });
-
-
-                if (error) {
-
-                    if (error.code === "23505") {
-
-                        throw new Error(
-                            "This parent is already linked to this learner."
-                        );
-
-                    }
-
-                    throw error;
-
-                }
-
-
-                parentLinkForm.reset();
-
-                setMessage(
-                    linkMessage,
-                    "Parent successfully linked to learner.",
-                    true
-                );
-
-                await loadLearnerManagement();
-
-
-            } catch (error) {
-
-                console.error(
-                    "Parent-learner linking failed:",
-                    error
-                );
-
-                setMessage(
-                    linkMessage,
-                    error.message ||
-                        "Unable to link parent to learner.",
-                    false
-                );
-
-            } finally {
-
-                linkButton.disabled = false;
-
-                linkButton.textContent =
-                    "Link Parent and Learner";
-
-            }
-
-        }
-    );
-
-
-    // =====================================
-    // INITIALISE MANAGEMENT PAGE
-    // =====================================
-
-    async function initialise() {
-
-        try {
-
-            await requireSchoolAdmin();
-
-            await loadLearnerManagement();
-
-            setMessage(
-                learnerMessage,
-                "Learner management connected to Supabase.",
-                true
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Learner management initialisation failed:",
-                error
-            );
-
-            setMessage(
-                learnerMessage,
-                error.message ||
-                    "Unable to load learner management.",
-                false
-            );
-
-        }
-
-    }
-
-
-    initialise();
-
-})();
-
-
-
